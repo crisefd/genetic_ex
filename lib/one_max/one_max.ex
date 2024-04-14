@@ -1,5 +1,6 @@
 defmodule Genetic.OneMaxGA  do
 require Integer
+require Arrays
 
   def execute(chromo_size, pop_size, mutation_rate, debug \\ false) do
     fixed_chromo_size = fix_chromo_size(chromo_size)
@@ -13,13 +14,37 @@ require Integer
 
   defp fix_chromo_size(size), do: size
 
+  defp find_best(population) do
+    population
+    |> Enum.reduce(%{best: nil, best_fit: -1}, fn chromo, result ->
+        fit = sum(chromo)
+        if fit > result.best_fit do
+          %{best: chromo, best_fit: fit}
+        else
+          result
+        end
+    end)
+  end
+
+  defp sum(chromosome) do
+    chromosome
+    |> Arrays.reduce(0, fn val, acc -> val + acc  end)
+  end
+
+  defp split(chromosome, cx_point, size) do
+    right_side_amount = size - cx_point
+    left_side_amount = size - right_side_amount
+    { Arrays.slice(chromosome, 0, left_side_amount),
+      Arrays.slice(chromosome, cx_point, right_side_amount) }
+  end
+
   defp init_pop(chromo_size, pop_size) do
-    for _ <- 1..pop_size, do: (for _ <- 1..chromo_size, do: Enum.random(0..1))
+    for _ <- 1..pop_size, do: Arrays.new(for _ <- 1..chromo_size, do: Enum.random(0..1))
   end
 
   defp evaluate(population) do
     population
-    |> Enum.sort_by( &Enum.sum/1, :desc)
+    |> Enum.sort_by( &sum/1, :desc)
   end
 
   defp select(population) do
@@ -30,27 +55,27 @@ require Integer
 
   defp crossover(couples, size) do
     couples
-    |> Enum.reduce([], fn {p1, p2}, acc ->
+    |> Enum.reduce([], fn {p1, p2}, population ->
       cx_point = :rand.uniform(size)
-      {{h1, t1}, {h2, t2}} = { Enum.split(p1, cx_point), Enum.split(p2, cx_point) }
-      [h1 ++ t2, h2 ++ t1 | acc ]
+      {{l1, r1}, {l2, r2}} = { split(p1, cx_point, size), split(p2, cx_point, size) }
+      [  Arrays.concat(l1, r2), Arrays.concat(l2, r1) | population ]
+
     end)
   end
 
-  def mutate(population, rate) do
+  defp mutate(population, rate) do
     population
     |> Enum.map(fn chromosome ->
       if :rand.uniform() < rate  do
-        Enum.shuffle(chromosome)
+        Arrays.new(Enum.shuffle(chromosome))
       else
         chromosome
       end
-     end)
+    end)
   end
 
   defp evolve(population, size, generation, mutation_rate, debug) do
-    best = Enum.max_by(population, &Enum.sum/1)
-    best_fit = Enum.sum(best)
+    %{best: best, best_fit: best_fit} = find_best(population)
     if debug do
       IO.puts("Generation: #{generation}")
       IO.puts("Current best fitness: #{best_fit}")
