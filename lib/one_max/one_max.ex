@@ -75,21 +75,28 @@ require Arrays
   end
 
   defp evolve(population, size, generation, mutation_rate, debug) do
-    %{best: best, best_fit: best_fit} = find_best(population)
+    sorted_population =
+      population
+      |> evaluate()
+    best = hd(sorted_population)
+    best_fit = sum(best)
+
     if debug do
       IO.puts("Generation: #{generation}")
       IO.puts("Current best fitness: #{best_fit}")
     end
+
     if best_fit == size do
       %{best: best, best_fit: best_fit, generation: generation}
     else
-      population
-      |> evaluate()
+      sorted_population
       |> select()
       |> crossover(size)
       |> mutate(mutation_rate)
       |> evolve(size, generation + 1, mutation_rate, debug)
     end
+
+
   end
 
 end
