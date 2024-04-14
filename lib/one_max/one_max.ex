@@ -3,27 +3,8 @@ require Integer
 require Arrays
 
   def execute(chromo_size, pop_size, mutation_rate, debug \\ false) do
-    fixed_chromo_size = fix_chromo_size(chromo_size)
-    init_pop(fixed_chromo_size, pop_size)
-    |> evolve(fixed_chromo_size, 0, mutation_rate, debug)
-  end
-
-  defp fix_chromo_size(size) when Integer.is_odd(size) do
-    size + 1
-  end
-
-  defp fix_chromo_size(size), do: size
-
-  defp find_best(population) do
-    population
-    |> Enum.reduce(%{best: nil, best_fit: -1}, fn chromo, result ->
-        fit = sum(chromo)
-        if fit > result.best_fit do
-          %{best: chromo, best_fit: fit}
-        else
-          result
-        end
-    end)
+    init_pop(chromo_size, pop_size)
+    |> evolve(chromo_size, 0, mutation_rate, debug)
   end
 
   defp sum(chromosome) do
