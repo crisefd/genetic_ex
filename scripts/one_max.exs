@@ -1,12 +1,25 @@
-optimal_fitness = 100
+defmodule OneMaxProblem do
+  @behaviour Problem
+  alias Types.Chromosome
+  require Arrays
 
-genotype = fn ->
-  Arrays.new(for _ <- 1..optimal_fitness, do: Enum.random(0..1))
+  @impl true
+  def genotype() do
+    genes = Arrays.new(for _ <- 1..1000, do: Enum.random(0..1))
+    %Chromosome{ genes: genes }
+  end
+
+  @impl true
+  def fitness_function(chromosome) do
+    chromosome.genes
+    |> Arrays.reduce(0, fn val, acc -> val + acc  end)
+  end
+
+  @impl true
+  def terminate?([best | _population]) do
+    best.fitness === Arrays.size(best.genes)
+  end
+
 end
 
-fitness_function = fn chromosome ->
-  chromosome
-  |> Arrays.reduce(0, fn val, acc -> val + acc  end)
-end
-
-Genetic.execute(genotype, fitness_function, optimal_fitness) |> IO.inspect()
+Genetic.execute(OneMaxProblem) |> IO.inspect()
