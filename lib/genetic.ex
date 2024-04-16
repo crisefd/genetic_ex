@@ -68,23 +68,34 @@ defmodule Genetic do
     sorted_population =
       population
       |> evaluate(&problem.fitness_function/1, opts)
+
     best = hd(sorted_population)
-    best_fit = best.fitness
-    logging = Keyword.get(opts, :logging, true)
 
-    if logging do
-      IO.puts("Generation: #{generation}")
-      IO.puts("Current best fitness: #{best_fit}")
-    end
+    log(best, generation, opts)
 
-    if problem.terminate?(population) do
-      %{best: best, best_fit: best_fit, generation: generation}
+    if problem.terminate?(sorted_population) do
+      population_size = Keyword.get(opts, :population_size, @default_population_size)
+      chromosome_size =  best.genes |> Arrays.size()
+      %{
+        evaluations: population_size * chromosome_size * generation,
+        generations: generation,
+        best: best.genes |> Arrays.to_list(),
+        best_fitness: best.fitness,
+      }
     else
       sorted_population
       |> select(&problem.selection_function/2, opts)
       |> crossover(sorted_population, opts)
       |> mutate(opts)
-      |> evolve(problem,  generation + 1, opts)
+      |> evolve(problem, generation + 1, opts)
+    end
+  end
+
+  defp log(best, generation, opts) do
+    logging = Keyword.get(opts, :logging, true)
+    if logging do
+      IO.puts("Generation: #{generation}")
+      IO.puts("Current best fitness: #{best.fitness}")
     end
   end
 
