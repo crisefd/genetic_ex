@@ -5,8 +5,7 @@ defmodule Genetic do
 
   @default_population_size 1000
   @default_mutation_rate 0.05
-  @default_selection_chunk_size 2
-  @default_evaluation_sorter :desc
+  @default_optimization :max
 
   def execute(problem, opts \\ []) do
     initialize_population(&problem.genotype/0, opts)
@@ -20,7 +19,8 @@ defmodule Genetic do
 
   defp evaluate(population, fitness_function, opts) do
     population_size = Keyword.get(opts, :population_size, @default_population_size)
-    sorter = Keyword.get(opts, :evaluation_sorter, @default_evaluation_sorter)
+    optimization = Keyword.get(opts, :optimization, @default_optimization)
+    sorter = if optimization == :max, do: :desc, else: :asc
     population
     |> Enum.map(fn chromosome ->
       fitness = fitness_function.(chromosome)
@@ -31,14 +31,11 @@ defmodule Genetic do
     |> Enum.slice(0, population_size)
   end
 
-  defp select(population, opts) do
-    selection_chunk_size = Keyword.get(opts, :selection_chunck_size, @default_selection_chunk_size)
-    population
-    |> Enum.chunk_every(selection_chunk_size)
-    |> Enum.map(&List.to_tuple/1)
+  defp select(population, selection_function, opts) do
+    selection_function.(population, opts)
   end
 
-  defp crossover(pairs, population, opts) do
+  defp crossover(pairs, population, _opts) do
     pairs
     |> Enum.reduce(population,
       fn {p1, p2}, new_population ->
@@ -84,7 +81,7 @@ defmodule Genetic do
       %{best: best, best_fit: best_fit, generation: generation}
     else
       sorted_population
-      |> select(opts)
+      |> select(&problem.selection_function/2, opts)
       |> crossover(sorted_population, opts)
       |> mutate(opts)
       |> evolve(problem,  generation + 1, opts)

@@ -7,4 +7,6 @@ defmodule Problem do
 
   @callback terminate?(Enum.t()) :: boolean()
 
+  @callback selection_function(Enum.t(), Enum.t()) :: Enum.t()
+
 end

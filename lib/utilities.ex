@@ -1,15 +1,15 @@
 defmodule Utilities do
 
-  def sum(array) do
-    Arrays.reduce(array, 0, fn val, acc -> val + acc  end)
+  def sum(genes) do
+    Arrays.reduce(genes, 0, fn val, acc -> val + acc  end)
   end
 
-  def split(array, cx_point) do
-    size = Arrays.size(array)
+  def split(genes, cx_point) do
+    size = Arrays.size(genes)
     right_side_amount = size - cx_point
     left_side_amount = size - right_side_amount
-    { Arrays.slice(array, 0, left_side_amount),
-      Arrays.slice(array, cx_point, right_side_amount) }
+    { Arrays.slice(genes, 0, left_side_amount),
+      Arrays.slice(genes, cx_point, right_side_amount) }
   end
 
   def minmax_fitness([first | population]) do

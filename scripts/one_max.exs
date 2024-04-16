@@ -3,6 +3,7 @@ defmodule OneMaxProblem do
   alias Types.Chromosome
   require Arrays
   require Utilities
+  require Selection
 
   @impl true
   def genotype() do
@@ -17,7 +18,12 @@ defmodule OneMaxProblem do
 
   @impl true
   def terminate?([best | _population]) do
-    best.fitness === Arrays.size(best.genes)
+    best.fitness == Arrays.size(best.genes)
+  end
+
+  @impl true
+  def selection_function(population, _opts) do
+    Selection.elitism(population)
   end
 
 end
