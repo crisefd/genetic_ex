@@ -1,5 +1,6 @@
 defmodule Genetic do
   alias Types.Chromosome
+  require Utilities
   require Arrays
 
   @default_population_size 1000
@@ -37,13 +38,13 @@ defmodule Genetic do
     |> Enum.map(&List.to_tuple/1)
   end
 
-  defp crossover(couples, population, opts) do
-    couples
+  defp crossover(pairs, population, opts) do
+    pairs
     |> Enum.reduce(population,
       fn {p1, p2}, new_population ->
         size = Arrays.size(p1.genes)
         cx_point = :rand.uniform(size)
-        {{l1, r1}, {l2, r2}} = { split(p1.genes, cx_point, size), split(p2.genes, cx_point, size) }
+        {{l1, r1}, {l2, r2}} = { Utilities.split(p1.genes, cx_point), Utilities.split(p2.genes, cx_point) }
         c1 = %Chromosome{ p1 | genes:  Arrays.concat(l1, r2) }
         c2 = %Chromosome{ p2 | genes:  Arrays.concat(l2, r1) }
         [ c1, c2 | new_population ]
@@ -88,13 +89,6 @@ defmodule Genetic do
       |> mutate(opts)
       |> evolve(problem,  generation + 1, opts)
     end
-  end
-
-  defp split(genes, cx_point, size) do
-    right_side_amount = size - cx_point
-    left_side_amount = size - right_side_amount
-    { Arrays.slice(genes, 0, left_side_amount),
-      Arrays.slice(genes, cx_point, right_side_amount) }
   end
 
 end

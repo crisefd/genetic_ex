@@ -2,6 +2,7 @@ defmodule OneMaxProblem do
   @behaviour Problem
   alias Types.Chromosome
   require Arrays
+  require Utilities
 
   @impl true
   def genotype() do
@@ -11,8 +12,7 @@ defmodule OneMaxProblem do
 
   @impl true
   def fitness_function(chromosome) do
-    chromosome.genes
-    |> Arrays.reduce(0, fn val, acc -> val + acc  end)
+    Utilities.sum(chromosome.genes)
   end
 
   @impl true
