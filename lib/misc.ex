@@ -1,5 +1,12 @@
 defmodule Misc do
 
+  def weigh_up_sum(vals, factors) do
+    vals
+    |> Enum.zip(factors)
+    |> Enum.map(fn {v, f} -> v * f  end)
+    |> Enum.sum()
+  end
+
   def sum(genes) do
     Arrays.reduce(genes, 0, fn val, acc -> val + acc  end)
   end

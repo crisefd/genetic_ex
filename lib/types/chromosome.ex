@@ -22,8 +22,8 @@ defmodule Types.Chromosome do
     import Inspect.Algebra
 
     def inspect(chromosome,_opts) do
-      full_genes = chromosome.genes |> Arrays.to_list() |> Enum.join(", ")
-      genes = if String.length(full_genes) > 25, do: String.slice(full_genes, 0, 25) <> "\n...", else: full_genes
+      genes = chromosome.genes |> Arrays.to_list() |> List.to_string()
+      # genes = if String.length(full_genes) > 25, do: String.slice(full_genes, 0, 25) <> "\n...", else: full_genes
       concat([
         "\n",
         "\t Fitness: #{chromosome.fitness}",

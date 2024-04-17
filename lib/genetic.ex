@@ -39,7 +39,7 @@ defmodule Genetic do
     |> Enum.reduce(population,
       fn {p1, p2}, new_population ->
         size = Arrays.size(p1.genes)
-        cx_point = :rand.uniform(size)
+        cx_point = Enum.random(0..(size - 1))
         {{l1, r1}, {l2, r2}} = { Misc.split(p1.genes, cx_point), Misc.split(p2.genes, cx_point) }
         c1 = %Chromosome{ p1 | genes:  Arrays.concat(l1, r2) }
         c2 = %Chromosome{ p2 | genes:  Arrays.concat(l2, r1) }
@@ -67,8 +67,7 @@ defmodule Genetic do
       %{
         evaluations: population_size * chromosome_size * generation,
         generations: generation,
-        best: best.genes |> Arrays.to_list(),
-        best_fitness: best.fitness,
+        best: best.genes,
       }
     else
       sorted_population
@@ -84,7 +83,7 @@ defmodule Genetic do
     step = Keyword.get(opts, :logging_step, @default_logging_step)
     if logging && rem(generation, step) == 0 do
       IO.puts("Generation: #{generation}")
-      IO.puts("Best:  #{inspect(best)}")
+      IO.puts("Best Fit:  #{best.fitness}")
 
     end
   end

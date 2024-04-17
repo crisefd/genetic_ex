@@ -3,21 +3,20 @@ defmodule SpellerProblem do
   alias Types.Chromosome
 
   @range ?a..?z
+  @target "supercalifragilisticexpialidocious"
 
   @impl true
   def genotype() do
-    genes =
-      Enum.take_random(@range, 34)
-      |> Arrays.new()
+    size = String.length(@target)
+    genes = (for _ <- 1..size, do: Enum.random(@range)) |> Arrays.new()
 
     %Chromosome{genes: genes}
   end
 
   @impl true
   def fitness_function(chromosome) do
-    target = "supercalifragilisticexpialidocious"
     guess = chromosome.genes |> Arrays.to_list() |> List.to_string()
-    String.jaro_distance(target, guess)
+    String.jaro_distance(@target, guess)
   end
 
   @impl true
@@ -32,14 +31,14 @@ defmodule SpellerProblem do
     population
     |> Enum.map(fn chromosome ->
       if :rand.uniform() <= mutation_rate  do
-        option = Enum.random(0..2)
-        # genes = Mutation.shuffle(chromosome.genes) |> Mutation.one_gene(@range)
-        genes =
-          case option do
-            0 -> Mutation.all_genes(chromosome.genes, @range)
-            1 -> Mutation.shuffle(chromosome.genes)
-            2 -> Mutation.one_gene(chromosome.genes, @range)
-          end
+        # option = Enum.random(0..2)
+        genes = Mutation.shuffle(chromosome.genes) |> Mutation.one_gene(@range)
+        # genes =
+        #   case option do
+        #     0 -> Mutation.all_genes(chromosome.genes, @range)
+        #     1 -> Mutation.shuffle(chromosome.genes)
+        #     2 -> Mutation.one_gene(chromosome.genes, @range)
+        #   end
         %Chromosome{ genes: genes }
       else
         chromosome
