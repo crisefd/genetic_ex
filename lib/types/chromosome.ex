@@ -1,5 +1,4 @@
 defmodule Types.Chromosome do
-  require Arrays
 
   @type t :: %__MODULE__{
     genes: Arrays.t(),
@@ -18,4 +17,23 @@ defmodule Types.Chromosome do
             age: 0,
             selection_probability: 0,
             snr: 0
+
+  defimpl Inspect, for: Types.Chromosome  do
+    import Inspect.Algebra
+
+    def inspect(chromosome,_opts) do
+      full_genes = chromosome.genes |> Arrays.to_list() |> Enum.join(", ")
+      genes = if String.length(full_genes) > 25, do: String.slice(full_genes, 0, 25) <> "\n...", else: full_genes
+      concat([
+        "\n",
+        "\t Fitness: #{chromosome.fitness}",
+        "\n",
+        "\t Age: #{chromosome.age}",
+        "\n",
+        "\t Genes: #{genes}",
+        "\n",
+      ])
+    end
+
+  end
 end

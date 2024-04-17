@@ -1,4 +1,4 @@
-defmodule Utilities do
+defmodule Misc do
 
   def sum(genes) do
     Arrays.reduce(genes, 0, fn val, acc -> val + acc  end)

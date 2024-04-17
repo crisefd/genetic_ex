@@ -1,7 +1,5 @@
 defmodule Selection do
   alias Types.Chromosome
-  alias Utilities
-  require Arrays
 
   def elitism(population) do
     population
@@ -27,7 +25,7 @@ defmodule Selection do
   end
 
   defp calculate_probabilities(population, fitness_factor \\ 1.0) do
-    {min, max} = Utilities.minmax_fitness(population)
+    {min, max} = Misc.minmax_fitness(population)
     max = max +  1
     base = max + fitness_factor * (max - min)
     population  =

@@ -1,9 +1,6 @@
 defmodule OneMaxProblem do
   @behaviour Problem
   alias Types.Chromosome
-  require Arrays
-  require Utilities
-  require Selection
 
   @impl true
   def genotype() do
@@ -13,7 +10,7 @@ defmodule OneMaxProblem do
 
   @impl true
   def fitness_function(chromosome) do
-    Utilities.sum(chromosome.genes)
+    Misc.sum(chromosome.genes)
   end
 
   @impl true
@@ -24,6 +21,22 @@ defmodule OneMaxProblem do
   @impl true
   def selection_function(population, _opts) do
     Selection.elitism(population)
+  end
+
+  @impl true
+  def mutation_function(population, mutation_rate) do
+    population
+    |> Enum.map(fn chromosome ->
+      if :rand.uniform() < mutation_rate  do
+        mutated_genes =
+          chromosome.genes
+          |> Enum.shuffle()
+          |> Arrays.new()
+        %Chromosome{ chromosome | genes: mutated_genes }
+      else
+        chromosome
+      end
+    end)
   end
 
 end
