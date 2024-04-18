@@ -77,4 +77,10 @@ defmodule CrossoverTest do
       Crossover.two_point(@parent1, @parent2, cut_points)
     end
   end
+
+  test "Scattered Crossover" do
+    {child1, child2} = Crossover.scattered(@parent1, @parent2)
+    assert child1.genes !== @parent1.genes
+    assert child2.genes !== @parent2.genes
+  end
 end

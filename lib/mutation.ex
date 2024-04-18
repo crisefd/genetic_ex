@@ -13,13 +13,18 @@ defmodule Mutation do
   def one_gene(chromosome, range) do
     size = Arrays.size(chromosome.genes)
     gene_index = Enum.random(0..(size - 1))
+    base_gene = Arrays.get(chromosome.genes, gene_index)
     mutated_gene = Enum.random(range)
 
-    new_genes =
-      chromosome.genes
-      |> Arrays.replace(gene_index, mutated_gene)
+    if base_gene === mutated_gene do
+      one_gene(chromosome, range)
+    else
+      new_genes =
+        chromosome.genes
+        |> Arrays.replace(gene_index, mutated_gene)
 
-    %Chromosome{genes: new_genes}
+      %Chromosome{genes: new_genes}
+    end
   end
 
   def all_genes(chromosome, range) do

@@ -1,4 +1,5 @@
 defmodule Crossover do
+  require Integer
   alias Types.Chromosome
   alias Types.InvalidCutPointError
 
@@ -50,5 +51,29 @@ defmodule Crossover do
         %Chromosome{genes: genes2}
       }
     end
+  end
+
+  def scattered(parent1, parent2) do
+    num_genes = Arrays.size(parent1.genes)
+
+    {new_genes1, new_genes2} =
+      0..(num_genes - 1)
+      |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {genes1, genes2} ->
+        coin_flip = Enum.random(0..1)
+
+        {gene1, gene2} =
+          if coin_flip == 0 do
+            {Arrays.get(parent2.genes, index), Arrays.get(parent1.genes, index)}
+          else
+            {Arrays.get(parent1.genes, index), Arrays.get(parent2.genes, index)}
+          end
+
+        {Arrays.replace(genes1, index, gene1), Arrays.replace(genes2, index, gene2)}
+      end)
+
+    {
+      %Chromosome{genes: new_genes1},
+      %Chromosome{genes: new_genes2}
+    }
   end
 end
