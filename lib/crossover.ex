@@ -76,4 +76,30 @@ defmodule Crossover do
       %Chromosome{genes: new_genes2}
     }
   end
+
+  def arithmetic(parent1, parent2, percentage \\ -1) do
+    r_percentage = if percentage < 0, do: Enum.random(0..10) |> Kernel./(10), else: percentage
+    s_percentage = 1.0 - r_percentage
+    num_genes = Arrays.size(parent1.genes)
+
+    {child1_genes, child2_genes} =
+      0..(num_genes - 1)
+      |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {child1_genes, child2_genes} ->
+        gene1 = Arrays.get(parent1.genes, index)
+        gene2 = Arrays.get(parent2.genes, index)
+
+        new_gene1 = r_percentage * gene1 + s_percentage * gene2
+        new_gene2 = s_percentage * gene1 + r_percentage * gene2
+
+        {
+          Arrays.replace(child1_genes, index, new_gene1),
+          Arrays.replace(child2_genes, index, new_gene2)
+        }
+      end)
+
+    {
+      %Chromosome{genes: child1_genes},
+      %Chromosome{genes: child2_genes}
+    }
+  end
 end
