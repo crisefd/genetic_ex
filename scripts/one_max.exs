@@ -5,7 +5,7 @@ defmodule OneMaxProblem do
   @impl true
   def genotype() do
     genes = Arrays.new(for _ <- 1..1000, do: Enum.random(0..1))
-    %Chromosome{ genes: genes }
+    %Chromosome{genes: genes}
   end
 
   @impl true
@@ -30,7 +30,7 @@ defmodule OneMaxProblem do
   def mutation_function(population, mutation_rate) do
     population
     |> Enum.map(fn chromosome ->
-      if :rand.uniform() < mutation_rate  do
+      if :rand.uniform() < mutation_rate do
         Mutation.shuffle(chromosome)
       else
         chromosome
@@ -41,11 +41,13 @@ defmodule OneMaxProblem do
   @impl true
   def crossover_function(pairs, population) do
     pairs
-    |> Enum.reduce(population,
+    |> Enum.reduce(
+      population,
       fn {p1, p2}, new_population ->
-       {c1, c2} = Crossover.cut_point(p1, p2)
-       [ c1, c2 | new_population ]
-      end)
+        {c1, c2} = Crossover.one_point(p1, p2)
+        [c1, c2 | new_population]
+      end
+    )
   end
 end
 

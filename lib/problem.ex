@@ -12,5 +12,4 @@ defmodule Problem do
   @callback mutation_function(Chromosome.t(), number()) :: Chromosome.t()
 
   @callback crossover_function(Enum.t(), Enum.t()) :: Enum.t()
-
 end

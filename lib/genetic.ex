@@ -21,6 +21,7 @@ defmodule Genetic do
     population_size = Keyword.get(opts, :population_size, @default_population_size)
     optimization = Keyword.get(opts, :optimization, @default_optimization)
     sorter = if optimization == :max, do: :desc, else: :asc
+
     population
     |> Enum.map(fn chromosome ->
       fitness = fitness_function.(chromosome)
@@ -36,7 +37,7 @@ defmodule Genetic do
   end
 
   defp crossover(pairs, population, crossover_function, _opts) do
-   crossover_function.(pairs, population)
+    crossover_function.(pairs, population)
   end
 
   defp mutate(population, mutation_function, opts) do
@@ -46,18 +47,22 @@ defmodule Genetic do
 
   defp evolve(population, problem, generation, last_optimal_fitness, temperature, opts) do
     cooling_rate = Keyword.get(opts, :cooling_rate, @default_cooling_rate)
+
     sorted_population =
       population
       |> evaluate(&problem.fitness_function/1, opts)
 
     best = hd(sorted_population)
 
-    new_temperature = (1 - cooling_rate) * (temperature + abs(abs(best.fitness) - abs(last_optimal_fitness)))
+    new_temperature =
+      (1 - cooling_rate) * (temperature + abs(abs(best.fitness) - abs(last_optimal_fitness)))
 
     log(best, generation, new_temperature, opts)
+
     if problem.terminate?(sorted_population, generation, new_temperature) do
       population_size = Keyword.get(opts, :population_size, @default_population_size)
-      chromosome_size =  best.genes |> Arrays.size()
+      chromosome_size = best.genes |> Arrays.size()
+
       %{
         evaluations: population_size * chromosome_size * generation,
         generations: generation,
@@ -76,11 +81,11 @@ defmodule Genetic do
   defp log(best, generation, temperature, opts) do
     logging = Keyword.get(opts, :logging, true)
     step = Keyword.get(opts, :logging_step, @default_logging_step)
+
     if logging && rem(generation, step) == 0 do
       IO.puts("Generation: #{generation}")
       IO.puts("Best Fit:  #{best.fitness}")
       IO.puts("Temperature: #{temperature}")
     end
   end
-
 end

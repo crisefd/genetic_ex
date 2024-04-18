@@ -8,13 +8,13 @@ defmodule CargoProblem do
 
   @impl true
   def genotype() do
-    %Chromosome {
-      genes: (for _ <- 0..10, do: Enum.random(0..1)) |> Arrays.new()
+    %Chromosome{
+      genes: for(_ <- 0..10, do: Enum.random(0..1)) |> Arrays.new()
     }
   end
 
   @impl true
-  def fitness_function(%Chromosome{ genes: genes }) do
+  def fitness_function(%Chromosome{genes: genes}) do
     potential_profit =
       Misc.weigh_up_sum(genes, @profits)
 
@@ -30,7 +30,7 @@ defmodule CargoProblem do
   def terminate?(_, _, temperature) when temperature == 0, do: true
 
   def terminate?(_population, generation, _temperature) do
-   generation == 1000
+    generation == 1000
   end
 
   @impl true
@@ -42,7 +42,7 @@ defmodule CargoProblem do
   def mutation_function(population, mutation_rate) do
     population
     |> Enum.map(fn chromosome ->
-      if :rand.uniform() <= mutation_rate  do
+      if :rand.uniform() <= mutation_rate do
         Mutation.shuffle(chromosome)
       else
         chromosome
@@ -53,13 +53,14 @@ defmodule CargoProblem do
   @impl true
   def crossover_function(pairs, population) do
     pairs
-    |> Enum.reduce(population,
+    |> Enum.reduce(
+      population,
       fn {p1, p2}, new_population ->
-       {c1, c2} = Crossover.cut_point(p1, p2)
-       [ c1, c2 | new_population ]
-      end)
+        {c1, c2} = Crossover.one_point(p1, p2)
+        [c1, c2 | new_population]
+      end
+    )
   end
-
 end
 
- Genetic.execute(CargoProblem) |> IO.inspect()
+Genetic.execute(CargoProblem) |> IO.inspect()
