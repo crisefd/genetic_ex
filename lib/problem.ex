@@ -9,6 +9,8 @@ defmodule Problem do
 
   @callback selection_function(Enum.t(), Enum.t()) :: Enum.t()
 
-  @callback mutation_function(Enum.t(), number()) :: Enum.t()
+  @callback mutation_function(Chromosome.t(), number()) :: Chromosome.t()
+
+  @callback crossover_function(Enum.t(), Enum.t()) :: Enum.t()
 
 end

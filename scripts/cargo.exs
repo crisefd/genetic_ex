@@ -26,11 +26,11 @@ defmodule CargoProblem do
     profit
   end
 
-
   @impl true
-  def terminate?([best | _]) do
-    target = 53
-    best.fitness == target
+  def terminate?(_, _, temperature) when temperature == 0, do: true
+
+  def terminate?(_population, generation, _temperature) do
+   generation == 1000
   end
 
   @impl true
@@ -43,11 +43,21 @@ defmodule CargoProblem do
     population
     |> Enum.map(fn chromosome ->
       if :rand.uniform() <= mutation_rate  do
-        %Chromosome{ genes: Mutation.shuffle(chromosome.genes) }
+        Mutation.shuffle(chromosome)
       else
         chromosome
       end
     end)
+  end
+
+  @impl true
+  def crossover_function(pairs, population) do
+    pairs
+    |> Enum.reduce(population,
+      fn {p1, p2}, new_population ->
+       {c1, c2} = Crossover.cut_point(p1, p2)
+       [ c1, c2 | new_population ]
+      end)
   end
 
 end

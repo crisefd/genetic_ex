@@ -15,7 +15,7 @@ defmodule OneMaxProblem do
 
   @impl true
 
-  def terminate?(_population, generation, temperature) when temperature < 25 and generation > 10, do: true
+  def terminate?(_population, generation, temperature) when temperature == 0, do: true
 
   def terminate?([best | _population], _generation, _temperature) do
     best.fitness == Arrays.size(best.genes)
@@ -31,17 +31,22 @@ defmodule OneMaxProblem do
     population
     |> Enum.map(fn chromosome ->
       if :rand.uniform() < mutation_rate  do
-        mutated_genes =
-          chromosome.genes
-          |> Enum.shuffle()
-          |> Arrays.new()
-        %Chromosome{ chromosome | genes: mutated_genes }
+        Mutation.shuffle(chromosome)
       else
         chromosome
       end
     end)
   end
 
+  @impl true
+  def crossover_function(pairs, population) do
+    pairs
+    |> Enum.reduce(population,
+      fn {p1, p2}, new_population ->
+       {c1, c2} = Crossover.cut_point(p1, p2)
+       [ c1, c2 | new_population ]
+      end)
+  end
 end
 
 Genetic.execute(OneMaxProblem) |> IO.inspect()

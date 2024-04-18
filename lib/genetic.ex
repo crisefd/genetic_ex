@@ -35,17 +35,8 @@ defmodule Genetic do
     selection_function.(population, opts)
   end
 
-  defp crossover(pairs, population, _opts) do
-    pairs
-    |> Enum.reduce(population,
-      fn {p1, p2}, new_population ->
-        size = Arrays.size(p1.genes)
-        cx_point = Enum.random(0..(size - 1))
-        {{l1, r1}, {l2, r2}} = { Misc.split(p1.genes, cx_point), Misc.split(p2.genes, cx_point) }
-        c1 = %Chromosome{ p1 | genes:  Arrays.concat(l1, r2) }
-        c2 = %Chromosome{ p2 | genes:  Arrays.concat(l2, r1) }
-        [ c1, c2 | new_population ]
-      end)
+  defp crossover(pairs, population, crossover_function, _opts) do
+   crossover_function.(pairs, population)
   end
 
   defp mutate(population, mutation_function, opts) do
@@ -76,7 +67,7 @@ defmodule Genetic do
     else
       sorted_population
       |> select(&problem.selection_function/2, opts)
-      |> crossover(sorted_population, opts)
+      |> crossover(sorted_population, &problem.crossover_function/2, opts)
       |> mutate(&problem.mutation_function/2, opts)
       |> evolve(problem, generation + 1, best.fitness, new_temperature, opts)
     end
