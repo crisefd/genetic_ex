@@ -83,9 +83,10 @@ defmodule Genetic do
     step = Keyword.get(opts, :logging_step, @default_logging_step)
 
     if logging && rem(generation, step) == 0 do
-      IO.puts("Generation: #{generation}")
-      IO.puts("Best Fit:  #{best.fitness}")
-      IO.puts("Temperature: #{temperature}")
+      IO.inspect(generation, label: "Generation")
+      IO.inspect(temperature, label: "Temperature")
+      IO.inspect(best, label: "Best solution")
+      IO.puts("-------------------------")
     end
   end
 end

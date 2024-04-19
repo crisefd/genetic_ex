@@ -19,7 +19,7 @@ defmodule Misc do
 
   def minmax_fitness([first | population]) do
     population
-    |> Arrays.reduce({first.fitness, first.fitness}, fn chromosome, {min, max} ->
+    |> Enum.reduce({first.fitness, first.fitness}, fn chromosome, {min, max} ->
       new_max = if chromosome.fitness > max, do: chromosome.fitness, else: max
       new_min = if chromosome.fitness < min, do: chromosome.fitness, else: min
       {new_min, new_max}

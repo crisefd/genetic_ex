@@ -93,18 +93,18 @@ defmodule CrossoverTest do
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
 
-    assert1 =
+    assertion1 =
       expected1
       |> Enum.zip(actual1)
       |> Enum.map(fn {expected, actual} -> abs(abs(expected) - abs(actual)) < tolerance end)
       |> Enum.reduce(true, fn acceptable?, result -> acceptable? and result end)
 
-    assert2 =
+    assertion2 =
       expected2
       |> Enum.zip(actual2)
       |> Enum.map(fn {expected, actual} -> abs(abs(expected) - abs(actual)) < tolerance end)
       |> Enum.reduce(true, fn acceptable?, result -> acceptable? and result end)
 
-    assert(assert1 and assert2)
+    assert(assertion1 and assertion2)
   end
 end

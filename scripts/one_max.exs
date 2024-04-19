@@ -15,7 +15,7 @@ defmodule OneMaxProblem do
 
   @impl true
 
-  def terminate?(_population, generation, temperature) when temperature == 0, do: true
+  def terminate?(_population, _generation, temperature) when temperature == 0, do: true
 
   def terminate?([best | _population], _generation, _temperature) do
     best.fitness == Arrays.size(best.genes)
