@@ -18,7 +18,7 @@ defmodule Selection do
     population
     |> Enum.zip(probabilities)
     |> fill_mating_pool_up([], 0, mating_pool_size)
-    |> Enum.shuffle()
+    |> Misc.shuffle()
     |> Enum.chunk_every(2)
     |> Enum.map(&List.to_tuple/1)
   end
@@ -31,7 +31,7 @@ defmodule Selection do
   end
 
   def spin_roulette(population_probabilities) do
-    spin = :rand.uniform()
+    spin = Misc.random()
 
     population_probabilities
     |> Enum.find(fn {_, probability} ->

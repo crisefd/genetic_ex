@@ -1,4 +1,10 @@
 defmodule Misc do
+  def random(), do: :rand.uniform()
+
+  def random(range), do: Enum.random(range)
+
+  def shuffle(list), do: Enum.shuffle(list)
+
   def weigh_up_sum(vals, factors) do
     vals
     |> Enum.zip(factors)

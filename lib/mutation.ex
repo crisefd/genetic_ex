@@ -4,7 +4,7 @@ defmodule Mutation do
   def shuffle(chromosome) do
     new_genes =
       chromosome.genes
-      |> Enum.shuffle()
+      |> Misc.shuffle()
       |> Arrays.new()
 
     %Chromosome{genes: new_genes}
@@ -12,9 +12,9 @@ defmodule Mutation do
 
   def one_gene(chromosome, range) do
     size = Arrays.size(chromosome.genes)
-    gene_index = Enum.random(0..(size - 1))
+    gene_index = Misc.random(0..(size - 1))
     base_gene = Arrays.get(chromosome.genes, gene_index)
-    mutated_gene = Enum.random(range)
+    mutated_gene = Misc.random(range)
 
     if base_gene === mutated_gene do
       one_gene(chromosome, range)
@@ -31,7 +31,7 @@ defmodule Mutation do
     size = Arrays.size(chromosome.genes)
 
     new_genes =
-      for(_ <- 1..size, do: Enum.random(range))
+      for(_ <- 1..size, do: Misc.random(range))
       |> Arrays.new()
 
     %Chromosome{genes: new_genes}

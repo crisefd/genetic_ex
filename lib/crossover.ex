@@ -5,7 +5,7 @@ defmodule Crossover do
 
   def one_point(parent1, parent2, cut_point \\ -1) do
     num_genes = Arrays.size(parent1.genes)
-    cut_point = if cut_point < 0, do: Enum.random(0..(num_genes - 1)), else: cut_point
+    cut_point = if cut_point < 0, do: Misc.random(0..(num_genes - 1)), else: cut_point
 
     {{l1, r1}, {l2, r2}} =
       {Misc.split(parent1.genes, cut_point), Misc.split(parent2.genes, cut_point)}
@@ -19,8 +19,8 @@ defmodule Crossover do
   def two_point(parent1, parent2, cut_points \\ {-1, -1}) do
     num_genes = Arrays.size(parent1.genes)
     {cut_point1, cut_point2} = cut_points
-    cut_point1 = if cut_point1 < 0, do: Enum.random(0..(num_genes - 1)), else: cut_point1
-    cut_point2 = if cut_point2 < 0, do: Enum.random(0..(num_genes - 1)), else: cut_point2
+    cut_point1 = if cut_point1 < 0, do: Misc.random(0..(num_genes - 1)), else: cut_point1
+    cut_point2 = if cut_point2 < 0, do: Misc.random(0..(num_genes - 1)), else: cut_point2
 
     if cut_point1 > cut_point2 do
       raise InvalidCutPointError,
@@ -59,7 +59,7 @@ defmodule Crossover do
     {new_genes1, new_genes2} =
       0..(num_genes - 1)
       |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {genes1, genes2} ->
-        coin_flip = Enum.random(0..1)
+        coin_flip = Misc.random(0..1)
 
         {gene1, gene2} =
           if coin_flip == 0 do
@@ -78,7 +78,7 @@ defmodule Crossover do
   end
 
   def arithmetic(parent1, parent2, percentage \\ -1) do
-    r_percentage = if percentage < 0, do: Enum.random(0..10) |> Kernel./(10), else: percentage
+    r_percentage = if percentage < 0, do: Misc.random(0..10) |> Kernel./(10), else: percentage
     s_percentage = 1.0 - r_percentage
     num_genes = Arrays.size(parent1.genes)
 
