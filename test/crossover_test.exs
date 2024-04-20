@@ -1,6 +1,5 @@
 defmodule CrossoverTest do
   alias Types.Chromosome
-  alias Types.InvalidCutPointError
   use ExUnit.Case
   import Mox
   doctest Crossover

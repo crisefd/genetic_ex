@@ -1,6 +1,5 @@
 defmodule Selection do
   require Integer
-  alias Types.Chromosome
 
   def elitism(population) do
     population

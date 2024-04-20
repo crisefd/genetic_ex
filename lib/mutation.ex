@@ -1,10 +1,12 @@
 defmodule Mutation do
   alias Types.Chromosome
 
+  def misc, do: Application.get_env(:genetic, :misc)
+
   def shuffle(chromosome) do
     new_genes =
       chromosome.genes
-      |> Misc.shuffle()
+      |> misc().shuffle()
       |> Arrays.new()
 
     %Chromosome{genes: new_genes}
@@ -12,9 +14,9 @@ defmodule Mutation do
 
   def one_gene(chromosome, range) do
     size = Arrays.size(chromosome.genes)
-    gene_index = Misc.random(0..(size - 1))
+    gene_index = misc().random(0..(size - 1))
     base_gene = Arrays.get(chromosome.genes, gene_index)
-    mutated_gene = Misc.random(range)
+    mutated_gene = misc().random(range)
 
     if base_gene === mutated_gene do
       one_gene(chromosome, range)
@@ -31,7 +33,7 @@ defmodule Mutation do
     size = Arrays.size(chromosome.genes)
 
     new_genes =
-      for(_ <- 1..size, do: Misc.random(range))
+      for(_ <- 1..size, do: misc().random(range))
       |> Arrays.new()
 
     %Chromosome{genes: new_genes}

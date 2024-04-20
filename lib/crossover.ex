@@ -1,7 +1,6 @@
 defmodule Crossover do
   require Integer
   alias Types.Chromosome
-  alias Types.InvalidCutPointError
 
   def misc, do: Application.get_env(:genetic, :misc)
 
