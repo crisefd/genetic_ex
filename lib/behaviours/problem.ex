@@ -1,4 +1,4 @@
-defmodule Problem do
+defmodule Behaviours.Problem do
   alias Types.Chromosome
 
   @type population() :: list(Chromosome.t())

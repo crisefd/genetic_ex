@@ -3,12 +3,14 @@ defmodule Crossover do
   alias Types.Chromosome
   alias Types.InvalidCutPointError
 
+  def misc, do: Application.get_env(:genetic, :misc)
+
   def one_point(parent1, parent2, cut_point \\ -1) do
     num_genes = Arrays.size(parent1.genes)
-    cut_point = if cut_point < 0, do: Misc.random(0..(num_genes - 1)), else: cut_point
+    cut_point = if cut_point < 0, do: misc().random(0..(num_genes - 1)), else: cut_point
 
     {{l1, r1}, {l2, r2}} =
-      {Misc.split(parent1.genes, cut_point), Misc.split(parent2.genes, cut_point)}
+      {misc().split(parent1.genes, cut_point), misc().split(parent2.genes, cut_point)}
 
     {
       %Chromosome{genes: Arrays.concat(l1, r2)},
@@ -16,17 +18,10 @@ defmodule Crossover do
     }
   end
 
-  def two_point(parent1, parent2, cut_points \\ {-1, -1}) do
+  def two_point(parent1, parent2) do
     num_genes = Arrays.size(parent1.genes)
-    {cut_point1, cut_point2} = cut_points
-    cut_point1 = if cut_point1 < 0, do: Misc.random(0..(num_genes - 1)), else: cut_point1
-    cut_point2 = if cut_point2 < 0, do: Misc.random(0..(num_genes - 1)), else: cut_point2
-
-    if cut_point1 > cut_point2 do
-      raise InvalidCutPointError,
-        message:
-          "Expected cut point 1 to be lower than cut point 2, got: #{cut_point1} > #{cut_point2}"
-    end
+    cut_point1 = misc().random(0..(num_genes - 1))
+    cut_point2 = misc().random(0..cut_point1)
 
     if cut_point1 == cut_point2 do
       one_point(parent1, parent2, cut_point1)
@@ -59,7 +54,7 @@ defmodule Crossover do
     {new_genes1, new_genes2} =
       0..(num_genes - 1)
       |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {genes1, genes2} ->
-        coin_flip = Misc.random(0..1)
+        coin_flip = misc().random(0..1)
 
         {gene1, gene2} =
           if coin_flip == 0 do
@@ -77,8 +72,8 @@ defmodule Crossover do
     }
   end
 
-  def arithmetic(parent1, parent2, percentage \\ -1) do
-    r_percentage = if percentage < 0, do: Misc.random(0..10) |> Kernel./(10), else: percentage
+  def arithmetic(parent1, parent2) do
+    r_percentage = misc().random(0..10)
     s_percentage = 1.0 - r_percentage
     num_genes = Arrays.size(parent1.genes)
 

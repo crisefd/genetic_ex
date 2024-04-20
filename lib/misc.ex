@@ -1,4 +1,6 @@
 defmodule Misc do
+  @behaviour Behaviours.Misc
+
   def random(), do: :rand.uniform()
 
   def random(range), do: Enum.random(range)

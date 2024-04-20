@@ -1,5 +1,5 @@
 defmodule OneMaxProblem do
-  @behaviour Problem
+  @behaviour Behaviours.Problem
   alias Types.Chromosome
 
   @impl true

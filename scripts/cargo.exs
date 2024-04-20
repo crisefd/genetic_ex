@@ -1,6 +1,6 @@
 defmodule CargoProblem do
   alias Types.Chromosome
-  @behaviour Problem
+  @behaviour Behaviours.Problem
 
   @profits [6, 5, 8, 9, 6, 7, 3, 1, 2, 6]
   @weights [10, 6, 8, 7, 10, 9, 7, 11, 6, 8]

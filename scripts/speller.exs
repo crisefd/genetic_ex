@@ -1,5 +1,5 @@
 defmodule SpellerProblem do
-  @behaviour Problem
+  @behaviour Behaviours.Problem
   alias Types.Chromosome
 
   @range ?a..?z

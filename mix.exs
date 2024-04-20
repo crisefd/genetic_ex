@@ -22,7 +22,8 @@ defmodule Genetic.MixProject do
   defp deps do
     [
       {:arrays, "~> 2.1"},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:mox, "~> 1.1"}
     ]
   end
 end
