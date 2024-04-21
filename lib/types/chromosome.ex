@@ -21,7 +21,7 @@ defmodule Types.Chromosome do
         "\n",
         "\t Age: #{chromosome.age}",
         "\n",
-        "\t Genes: #{genes}",
+        "\t Genes: #{inspect(genes)}",
         "\n"
       ])
     end
