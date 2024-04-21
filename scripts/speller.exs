@@ -20,9 +20,9 @@ defmodule SpellerProblem do
 
   @impl true
   def selection_function(population, opts) do
-    crossover_rate = Keyword.get(opts, :crossover_rate)
+    selection_rate = Keyword.get(opts, :selection_rate)
     population_size = Keyword.get(opts, :population_size)
-    Selection.roulette(population, population_size, crossover_rate)
+    Selection.roulette(population, population_size, selection_rate)
   end
 
   @impl true
@@ -55,7 +55,7 @@ end
 
 Genetic.execute(SpellerProblem,
   mutation_rate: 0.1,
-  crossover_rate: 0.5,
+  selection_rate: 0.5,
   logging: true,
   population_size: 1000
 )

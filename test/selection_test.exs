@@ -45,7 +45,7 @@ defmodule SelectionTest do
         %Chromosome{genes: genes |> Arrays.new(), fitness: Enum.sum(genes)}
       end)
 
-    crossover_rate = 0.5
+    selection_rate = 0.5
 
     ## expected_probs = [0.07924041730160591, 0.2203141483999531, 0.37328566404876334,
     ## 0.5272535458914547, 0.6841519165396788, 0.8416363849490094, 1.0]
@@ -70,7 +70,7 @@ defmodule SelectionTest do
       |> Enum.chunk_every(2)
       |> Enum.map(&List.to_tuple/1)
 
-    actual_pairs = Selection.roulette(population, 7, crossover_rate)
+    actual_pairs = Selection.roulette(population, 7, selection_rate)
 
     assert expected_pairs == actual_pairs
   end
@@ -90,7 +90,7 @@ defmodule SelectionTest do
         %Chromosome{genes: genes |> Arrays.new(), fitness: Enum.sum(genes)}
       end)
 
-    crossover_rate = 0.5
+    selection_rate = 0.5
 
     MiscMock
     |> expect(:shuffle, & &1)
@@ -116,7 +116,7 @@ defmodule SelectionTest do
       |> Enum.chunk_every(2)
       |> Enum.map(&List.to_tuple/1)
 
-    actual_pairs = Selection.roulette(population, 7, crossover_rate)
+    actual_pairs = Selection.roulette(population, 7, selection_rate)
 
     assert expected_pairs == actual_pairs
   end
@@ -136,7 +136,7 @@ defmodule SelectionTest do
         %Chromosome{genes: genes |> Arrays.new(), fitness: Enum.sum(genes)}
       end)
 
-    crossover_rate = 0.5
+    selection_rate = 0.5
     population_size = Enum.count(population)
     optimization = :max
 
@@ -165,7 +165,7 @@ defmodule SelectionTest do
 
     actual_pairs =
       population
-      |> Selection.tournament(population_size, crossover_rate, optimization)
+      |> Selection.tournament(population_size, selection_rate, optimization)
 
     assert expected_pairs == actual_pairs
   end

@@ -9,9 +9,9 @@ defmodule Selection do
     |> Enum.map(&List.to_tuple/1)
   end
 
-  def roulette(population, population_size, crossover_rate, fitness_factor \\ 1.0) do
+  def roulette(population, population_size, selection_rate, fitness_factor \\ 1.0) do
     probabilities = calculate_probabilities(population, fitness_factor)
-    mating_pool_size = floor(population_size * crossover_rate)
+    mating_pool_size = floor(population_size * selection_rate)
 
     mating_pool_size =
       if Integer.is_odd(mating_pool_size), do: mating_pool_size + 1, else: mating_pool_size
@@ -24,10 +24,10 @@ defmodule Selection do
     |> Enum.map(&List.to_tuple/1)
   end
 
-  def tournament(population, population_size, crossover_rate, optimization) do
+  def tournament(population, population_size, selection_rate, optimization) do
     compare_function = if optimization == :max, do: &Kernel.max/2, else: &Kernel.min/2
 
-    mating_pool_size = floor(population_size * crossover_rate)
+    mating_pool_size = floor(population_size * selection_rate)
 
     mating_pool_size =
       if Integer.is_odd(mating_pool_size), do: mating_pool_size + 1, else: mating_pool_size
