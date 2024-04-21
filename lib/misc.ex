@@ -7,7 +7,7 @@ defmodule Misc do
 
   def shuffle(list), do: Enum.shuffle(list)
 
-  def weigh_up_sum(vals, factors) do
+  def weighted_sum(vals, factors) do
     vals
     |> Enum.zip(factors)
     |> Enum.map(fn {v, f} -> v * f end)

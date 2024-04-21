@@ -16,10 +16,10 @@ defmodule CargoProblem do
   @impl true
   def fitness_function(%Chromosome{genes: genes}) do
     potential_profit =
-      Misc.weigh_up_sum(genes, @profits)
+      Misc.weighted_sum(genes, @profits)
 
     over_limit? =
-      Misc.weigh_up_sum(genes, @weights)
+      Misc.weighted_sum(genes, @weights)
       |> Kernel.>(@weight_limit)
 
     profit = if over_limit?, do: 0, else: potential_profit
