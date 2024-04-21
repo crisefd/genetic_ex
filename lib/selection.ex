@@ -1,14 +1,41 @@
 defmodule Selection do
+  @moduledoc """
+     The Crossover module contains some of the most commonly used selection strategies for genetic algorithms
+  """
+
   require Integer
 
+  @type chromosome() :: Chromosome.t()
+  @type population() :: list(Chromosome.t())
+  @type pair() :: {chromosome(), chromosome()}
+  @type optimization() :: :max | :min
+
+  @spec misc() :: module()
+
+  @doc """
+    Returns the Misc module
+  """
   def misc, do: Application.get_env(:genetic, :misc)
 
+  @spec elitism(population :: population()) :: list(pair())
+  @doc """
+    Takes a population sorted by fitness value and forms pairs using contiguous chromosome
+  """
   def elitism(population) do
     population
     |> Enum.chunk_every(2)
     |> Enum.map(&List.to_tuple/1)
   end
 
+  @spec roulette(
+          population :: population(),
+          population_size :: integer(),
+          selection_rate :: float(),
+          fitness_factor :: float()
+        ) :: list(pair)
+  @doc """
+    Takes a population, perform Roulette Selection and forms pairs using the chromosome's normalized fitnesses to calculate probabilties
+  """
   def roulette(population, population_size, selection_rate, fitness_factor \\ 1.0) do
     probabilities = calculate_probabilities(population, fitness_factor)
     mating_pool_size = floor(population_size * selection_rate)
@@ -24,6 +51,15 @@ defmodule Selection do
     |> Enum.map(&List.to_tuple/1)
   end
 
+  @spec tournament(
+          population :: population(),
+          population_size :: integer(),
+          selection_rate :: float(),
+          optimization :: optimization()
+        ) :: list(pair())
+  @doc """
+    Takes a population of chromosome, performs Tournament Selection and returns a list of pairs
+  """
   def tournament(population, population_size, selection_rate, optimization) do
     compare_function = if optimization == :max, do: &Kernel.max/2, else: &Kernel.min/2
 

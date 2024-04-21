@@ -1,9 +1,25 @@
 defmodule Crossover do
+  @moduledoc """
+    The Crossover module contains some of the most commonly used crossover strategies for genetic algorithms
+  """
+
   require Integer
   alias Types.Chromosome
 
+  @type chromosome() :: Chromosome.t()
+
+  @spec misc() :: module()
+  @doc """
+    Returns the Misc module
+  """
   def misc, do: Application.get_env(:genetic, :misc)
 
+  @spec one_point(parent1 :: chromosome(), parent2 :: chromosome(), cut_point :: integer()) ::
+          {chromosome(), chromosome()}
+
+  @doc """
+    Takes two chromosomes, applies One-Point crossover and returns a tuple containing the two resulting offspring
+  """
   def one_point(parent1, parent2, cut_point \\ -1) do
     num_genes = Arrays.size(parent1.genes)
     cut_point = if cut_point < 0, do: misc().random(0..(num_genes - 1)), else: cut_point
@@ -17,6 +33,12 @@ defmodule Crossover do
     }
   end
 
+  @spec two_point(parent1 :: chromosome(), parent2 :: chromosome()) ::
+          {chromosome(), chromosome()}
+
+  @doc """
+    Takes two chromosomes, applies Two-Point crossover and returns a tuple containing the two resulting offspring
+  """
   def two_point(parent1, parent2) do
     num_genes = Arrays.size(parent1.genes)
     cut_point1 = misc().random(0..(num_genes - 1))
@@ -47,6 +69,11 @@ defmodule Crossover do
     end
   end
 
+  @spec scattered(parent1 :: chromosome(), parent2 :: chromosome()) ::
+          {chromosome(), chromosome()}
+  @doc """
+    Takes two chromosomes, applies Scattered (uniform) crossover and returns a tuple containing the two resulting offspring
+  """
   def scattered(parent1, parent2) do
     num_genes = Arrays.size(parent1.genes)
 
@@ -71,6 +98,10 @@ defmodule Crossover do
     }
   end
 
+  @spec arithmetic(chromosome(), chromosome()) :: {chromosome(), chromosome()}
+  @doc """
+     Takes two chromosomes, applies Arithemtic crossover and returns a tuple containing the two resulting offspring
+  """
   def arithmetic(parent1, parent2) do
     r_percentage = misc().random(0..10)
     s_percentage = 1.0 - r_percentage
