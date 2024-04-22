@@ -27,13 +27,26 @@ defmodule Selection do
     Takes a population sorted by fitness value and forms pairs using contiguous chromosome
   """
   def elitism(population, population_size, selection_rate) do
-    mating_pool_size = floor(population_size * selection_rate)
-
-    mating_pool_size =
-      if Integer.is_odd(mating_pool_size), do: mating_pool_size + 1, else: mating_pool_size
+    mating_pool_size = calculate_mating_pool_size(population_size, selection_rate)
 
     population
-    |> Enum.slice(0, mating_pool_size)
+    |> Enum.take(mating_pool_size)
+  end
+
+  @spec random(
+          population :: population(),
+          population_size :: integer(),
+          selection_rate :: float()
+        ) ::
+          list(chromosome())
+  @doc """
+  Takes a population and chooses k random number of chromosomes at random
+  """
+  def random(population, population_size, selection_rate) do
+    mating_pool_size = calculate_mating_pool_size(population_size, selection_rate)
+
+    population
+    |> misc().take_random(mating_pool_size)
   end
 
   @spec roulette(
@@ -47,10 +60,7 @@ defmodule Selection do
   """
   def roulette(population, population_size, selection_rate, fitness_factor \\ 1.0) do
     probabilities = calculate_probabilities(population, fitness_factor)
-    mating_pool_size = floor(population_size * selection_rate)
-
-    mating_pool_size =
-      if Integer.is_odd(mating_pool_size), do: mating_pool_size + 1, else: mating_pool_size
+    mating_pool_size = calculate_mating_pool_size(population_size, selection_rate)
 
     population
     |> Enum.zip(probabilities)
@@ -67,41 +77,76 @@ defmodule Selection do
   @doc """
     Takes a population of chromosome, performs Tournament Selection and returns a list of pairs
   """
-  def tournament(population, population_size, selection_rate, optimization) do
-    compare_function = if optimization == :max, do: &Kernel.max/2, else: &Kernel.min/2
+  def tournament(
+        population,
+        population_size,
+        selection_rate,
+        optimization,
+        num_participants \\ 2,
+        allow_duplicates? \\ true
+      ) do
+    optimize_by_function = if optimization == :max, do: &Enum.max_by/2, else: &Enum.min_by/2
 
-    mating_pool_size = floor(population_size * selection_rate)
+    mating_pool_size = calculate_mating_pool_size(population_size, selection_rate)
 
-    mating_pool_size =
-      if Integer.is_odd(mating_pool_size), do: mating_pool_size + 1, else: mating_pool_size
+    if allow_duplicates? do
+      tournament_duplicates(population, mating_pool_size, num_participants, optimize_by_function)
+    else
+      pool = MapSet.new()
 
-    population
-    |> Arrays.new()
-    |> hold_matches(population_size, compare_function, [], 0, mating_pool_size)
+      tournament_no_duplicates(
+        population,
+        num_participants,
+        0,
+        mating_pool_size,
+        pool,
+        optimize_by_function
+      )
+    end
   end
 
-  defp hold_matches(_, _, _, pool, num_matches, quota) when num_matches == quota do
-    pool
+  defp tournament_duplicates(population, mating_pool_size, num_participants, optimize_by_function) do
+    0..(mating_pool_size - 1)
+    |> Enum.map(fn _ ->
+      population
+      |> misc().take_random(num_participants)
+      |> optimize_by_function.(& &1.fitness)
+    end)
   end
 
-  defp hold_matches(population, population_size, compare_function, pool, num_matches, quota) do
-    index1 = misc().random(0..(population_size - 1))
-    index2 = misc().random(0..(population_size - 1))
+  defp tournament_no_duplicates(
+         _,
+         _,
+         current_pool_size,
+         max_pool_size,
+         pool,
+         _
+       )
+       when current_pool_size == max_pool_size,
+       do: MapSet.to_list(pool)
 
-    participant1 = Arrays.get(population, index1)
-    participant2 = Arrays.get(population, index2)
+  defp tournament_no_duplicates(
+         population,
+         num_participants,
+         current_pool_size,
+         max_pool_size,
+         pool,
+         optimize_by_function
+       ) do
+    chosen =
+      population
+      |> misc().take_random(num_participants)
+      |> optimize_by_function.(& &1.fitness)
 
-    best_fitness = compare_function.(participant1.fitness, participant2.fitness)
+    new_pool = MapSet.put(pool, chosen)
 
-    winner = if best_fitness == participant1.fitness, do: participant1, else: participant2
-
-    hold_matches(
+    tournament_no_duplicates(
       population,
-      population_size,
-      compare_function,
-      [winner | pool],
-      num_matches + 1,
-      quota
+      num_participants,
+      current_pool_size + 1,
+      max_pool_size,
+      new_pool,
+      optimize_by_function
     )
   end
 
@@ -150,5 +195,10 @@ defmodule Selection do
     |> Enum.map(fn chromosome ->
       base - chromosome.fitness
     end)
+  end
+
+  defp calculate_mating_pool_size(population_size, selection_rate) do
+    mating_pool_size = floor(population_size * selection_rate)
+    if Integer.is_odd(mating_pool_size), do: mating_pool_size + 1, else: mating_pool_size
   end
 end

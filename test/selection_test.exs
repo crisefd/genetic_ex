@@ -129,33 +129,34 @@ defmodule SelectionTest do
   end
 
   test "Tournament Selection" do
+    chromo0 = %Chromosome{genes: [100, 500, 400, 300, 50] |> Arrays.new(), fitness: 1350}
+    chromo1 = %Chromosome{genes: [130, 56, 78, 18, 13] |> Arrays.new(), fitness: 295}
+    chromo2 = %Chromosome{genes: [10, 25, 14, 32, 11] |> Arrays.new(), fitness: 92}
+    chromo3 = %Chromosome{genes: [1, 2, 3, 4, 5] |> Arrays.new(), fitness: 15}
+    chromo4 = %Chromosome{genes: [0, 0, 0, 0, 0] |> Arrays.new(), fitness: 0}
+    chromo5 = %Chromosome{genes: [-5, -2, -1, -3, -4] |> Arrays.new(), fitness: -15}
+    chromo6 = %Chromosome{genes: [-55, -22, -11, -33, -44] |> Arrays.new(), fitness: -165}
+
     population =
       [
-        [100, 500, 400, 300, 50],
-        [130, 56, 78, 18, 13],
-        [10, 25, 14, 32, 11],
-        [1, 2, 3, 4, 5],
-        [0, 0, 0, 0, 0],
-        [-5, -2, -1, -3, -4],
-        [-55, -22, -11, -33, -44]
+        chromo0,
+        chromo1,
+        chromo2,
+        chromo3,
+        chromo4,
+        chromo5,
+        chromo6
       ]
-      |> Enum.map(fn genes ->
-        %Chromosome{genes: genes |> Arrays.new(), fitness: Enum.sum(genes)}
-      end)
 
     selection_rate = 0.5
     population_size = Enum.count(population)
     optimization = :max
 
     MiscMock
-    |> expect(:random, fn _ -> 0 end)
-    |> expect(:random, fn _ -> 6 end)
-    |> expect(:random, fn _ -> 1 end)
-    |> expect(:random, fn _ -> 2 end)
-    |> expect(:random, fn _ -> 3 end)
-    |> expect(:random, fn _ -> 4 end)
-    |> expect(:random, fn _ -> 5 end)
-    |> expect(:random, fn _ -> 5 end)
+    |> expect(:take_random, fn _, _ -> [chromo0, chromo6] end)
+    |> expect(:take_random, fn _, _ -> [chromo1, chromo2] end)
+    |> expect(:take_random, fn _, _ -> [chromo3, chromo4] end)
+    |> expect(:take_random, fn _, _ -> [chromo5, chromo5] end)
 
     expected_parents =
       [
@@ -167,6 +168,7 @@ defmodule SelectionTest do
       |> Enum.map(fn genes ->
         %Chromosome{genes: genes |> Arrays.new(), fitness: Enum.sum(genes)}
       end)
+      |> Enum.reverse()
 
     actual_parents =
       population

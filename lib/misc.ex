@@ -5,6 +5,8 @@ defmodule Misc do
 
   def random(range), do: Enum.random(range)
 
+  def take_random(enum, count), do: Enum.take_random(enum, count)
+
   def shuffle(list), do: Enum.shuffle(list)
 
   def weighted_sum(vals, factors) do

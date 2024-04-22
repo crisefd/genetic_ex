@@ -3,6 +3,7 @@ defmodule Behaviours.Misc do
 
   @callback random() :: number()
   @callback random(Enum.t()) :: number()
+  @callback take_random(Enum.t(), integer()) :: Enum.t()
   @callback split(map(), integer()) :: tuple()
   @callback sum(map()) :: number()
   @callback weighted_sum(list(number()), list(number())) :: number()
