@@ -17,14 +17,23 @@ defmodule Selection do
   """
   def misc, do: Application.get_env(:genetic, :misc)
 
-  @spec elitism(population :: population()) :: list(pair())
+  @spec elitism(
+          population :: population(),
+          population_size :: integer(),
+          selection_rate :: float()
+        ) ::
+          list(chromosome())
   @doc """
     Takes a population sorted by fitness value and forms pairs using contiguous chromosome
   """
-  def elitism(population) do
+  def elitism(population, population_size, selection_rate) do
+    mating_pool_size = floor(population_size * selection_rate)
+
+    mating_pool_size =
+      if Integer.is_odd(mating_pool_size), do: mating_pool_size + 1, else: mating_pool_size
+
     population
-    |> Enum.chunk_every(2)
-    |> Enum.map(&List.to_tuple/1)
+    |> Enum.slice(0, mating_pool_size)
   end
 
   @spec roulette(
@@ -32,7 +41,7 @@ defmodule Selection do
           population_size :: integer(),
           selection_rate :: float(),
           fitness_factor :: float()
-        ) :: list(pair)
+        ) :: list(chromosome())
   @doc """
     Takes a population, perform Roulette Selection and forms pairs using the chromosome's normalized fitnesses to calculate probabilties
   """
@@ -47,8 +56,6 @@ defmodule Selection do
     |> Enum.zip(probabilities)
     |> go_to_casino([], 0, mating_pool_size)
     |> misc().shuffle()
-    |> Enum.chunk_every(2)
-    |> Enum.map(&List.to_tuple/1)
   end
 
   @spec tournament(
@@ -56,7 +63,7 @@ defmodule Selection do
           population_size :: integer(),
           selection_rate :: float(),
           optimization :: optimization()
-        ) :: list(pair())
+        ) :: list(chromosome())
   @doc """
     Takes a population of chromosome, performs Tournament Selection and returns a list of pairs
   """
@@ -71,8 +78,6 @@ defmodule Selection do
     population
     |> Arrays.new()
     |> hold_matches(population_size, compare_function, [], 0, mating_pool_size)
-    |> Enum.chunk_every(2)
-    |> Enum.map(&List.to_tuple/1)
   end
 
   defp hold_matches(_, _, _, pool, num_matches, quota) when num_matches == quota do

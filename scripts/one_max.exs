@@ -14,16 +14,15 @@ defmodule OneMaxProblem do
   end
 
   @impl true
-
-  def terminate?(_population, _generation, temperature) when temperature == 0, do: true
-
-  def terminate?([best | _population], _generation, _temperature) do
+  def terminate?([best | _], _generation, _temperature) do
     best.fitness == Arrays.size(best.genes)
   end
 
   @impl true
-  def selection_function(population, _opts) do
-    Selection.elitism(population)
+  def selection_function(population, opts) do
+    population_size = Keyword.get(opts, :population_size)
+    selection_rate = Keyword.get(opts, :selection_rate)
+    Selection.elitism(population, population_size, selection_rate)
   end
 
   @impl true

@@ -27,10 +27,8 @@ defmodule CargoProblem do
   end
 
   @impl true
-  def terminate?(_, _, temperature) when temperature == 0, do: true
-
-  def terminate?(_population, generation, _temperature) do
-    generation == 1000
+  def terminate?(_population, generation, temperature) do
+    generation == 1000 || temperature == 0
   end
 
   @impl true
@@ -65,4 +63,4 @@ defmodule CargoProblem do
   end
 end
 
-Genetic.execute(CargoProblem, selection_rate: 0.5, population_size: 1000) |> IO.inspect()
+Genetic.execute(CargoProblem, selection_rate: 0.8, mutation_rate: 0.1) |> IO.inspect()

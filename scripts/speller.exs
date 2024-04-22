@@ -26,7 +26,9 @@ defmodule SpellerProblem do
   end
 
   @impl true
-  def terminate?([best | _], generation, _), do: best.fitness == 1 || generation == 50_000
+  def terminate?([best | _], generation, _) do
+    best.fitness == 1 || generation == 50_000
+  end
 
   @impl true
   def mutation_function(population, mutation_rate) do
