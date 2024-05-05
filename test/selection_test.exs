@@ -176,4 +176,49 @@ defmodule SelectionTest do
 
     assert expected_parents == actual_parents
   end
+
+  test "SUS selection" do
+    chromo0 = %Chromosome{genes: [100, 500, 400, 300, 50] |> Arrays.new(), fitness: 1350}
+    chromo1 = %Chromosome{genes: [130, 56, 78, 18, 13] |> Arrays.new(), fitness: 295}
+    chromo2 = %Chromosome{genes: [10, 25, 14, 32, 11] |> Arrays.new(), fitness: 92}
+    chromo3 = %Chromosome{genes: [1, 2, 3, 4, 5] |> Arrays.new(), fitness: 15}
+    chromo4 = %Chromosome{genes: [0, 0, 0, 0, 0] |> Arrays.new(), fitness: 0}
+    chromo5 = %Chromosome{genes: [-5, -2, -1, -3, -4] |> Arrays.new(), fitness: -15}
+    chromo6 = %Chromosome{genes: [-55, -22, -11, -33, -44] |> Arrays.new(), fitness: -165}
+
+    population =
+      [
+        chromo0,
+        chromo1,
+        chromo2,
+        chromo3,
+        chromo4,
+        chromo5,
+        chromo6
+      ]
+
+    selection_rate = 0.5
+    population_size = Enum.count(population)
+
+    MiscMock
+    |> expect(:random, fn _ -> 2000 end)
+    |> expect(:minmax_fitness, &Misc.minmax_fitness/1)
+
+    expected_parents =
+      [
+        [1, 2, 3, 4, 5],
+        [10, 25, 14, 32, 11],
+        [130, 56, 78, 18, 13],
+        [100, 500, 400, 300, 50]
+      ]
+      |> Enum.map(fn genes ->
+        %Chromosome{genes: genes |> Arrays.new(), fitness: Enum.sum(genes)}
+      end)
+
+    actual_parents =
+      population
+      |> Selection.stochastic_universal_sampling(population_size, selection_rate)
+
+    assert expected_parents == actual_parents
+  end
 end

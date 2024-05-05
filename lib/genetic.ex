@@ -102,17 +102,9 @@ defmodule Genetic do
       age = chromosome.age + 1
       %Chromosome{chromosome | fitness: fitness, age: age}
     end)
-    |> Enum.sort_by(fn chromosome -> chromosome.fitness end, sorter)
+    |> Enum.sort_by(& &1.fitness, sorter)
     |> Enum.slice(0, population_size)
   end
-
-  # defp get_best_solution(population, opts) do
-  #   optimization = Keyword.get(opts, :optimization, @default_optimization)
-
-  #   optimize_by = if optimization == :max, do: &Enum.max_by/2, else: &Enum.min_by/2
-
-  #   apply(optimize_by, [population, fn chromosome -> chromosome.fitness end])
-  # end
 
   defp select(population, selection_function, opts) do
     reinsertion_strategy = Keyword.get(opts, :reinsertion_strategy, @default_reinsertion_strategy)

@@ -68,6 +68,40 @@ defmodule Selection do
     |> misc().shuffle()
   end
 
+  @spec stochastic_universal_sampling(
+          population :: population(),
+          population_size :: integer(),
+          selection_rate :: float(),
+          fitness_factor :: float()
+        ) :: list(chromosome())
+  @doc """
+    Stochastic Universal Sampling
+  """
+  def stochastic_universal_sampling(
+        population,
+        population_size,
+        selection_rate,
+        fitness_factor \\ 1.0
+      ) do
+    mating_pool_size = calculate_mating_pool_size(population_size, selection_rate)
+
+    {fitnesses_sum, _, cummulative_fitnesses} =
+      transform_fitnesses(population, fitness_factor)
+
+    step_size = div(round(fitnesses_sum), population_size)
+    start = misc().random(0..step_size)
+
+    pointers =
+      0..(mating_pool_size - 1)
+      |> Enum.map(fn index ->
+        start + index * step_size
+      end)
+
+    population
+    |> Enum.zip(cummulative_fitnesses)
+    |> do_sus_select(pointers, [])
+  end
+
   @spec tournament(
           population :: population(),
           population_size :: integer(),
@@ -167,34 +201,50 @@ defmodule Selection do
   end
 
   defp calculate_probabilities(population, fitness_factor) do
-    fitnesses = calculate_normalized_fitnesses(population, fitness_factor)
-    fitnesses_fum = fitnesses |> Enum.sum()
+    {fitnesses_fum, fitnesses, _} = transform_fitnesses(population, fitness_factor)
 
-    {_, [_ | probabilities]} =
+    [_ | probabilities] =
       fitnesses
-      |> Enum.reduce({0, []}, fn fitness, {prev_prob, probs} ->
+      |> Enum.reduce([], fn fitness, probs ->
+        prev_prob = if Enum.empty?(probs), do: 0, else: hd(probs)
         new_prob = prev_prob + fitness / fitnesses_fum
-        {new_prob, [new_prob | probs]}
+        [new_prob | probs]
       end)
 
     [1.0 | probabilities]
     |> Enum.reverse()
   end
 
-  defp calculate_normalized_fitnesses(population, fitness_factor) do
-    # [min_fitness, max_fitness] =
-    #   misc().minmax_fitness(population)
-    #   |> Tuple.to_list()
-    #   |> Enum.map(&Kernel.abs/1)
-
+  # Returns the list of normalized fit vals, the list of cummulative fit vals and the sum of all fit vals
+  defp transform_fitnesses(population, fitness_factor) do
     {min_fitness, max_fitness} = misc().minmax_fitness(population)
     max_fitness = max_fitness + 1
     base = max_fitness + fitness_factor * (max_fitness - min_fitness)
 
-    population
-    |> Enum.map(fn chromosome ->
-      base - chromosome.fitness
-    end)
+    {normalized_fitnesses, cummulative_fitnesses} =
+      population
+      |> Enum.reduce({[], []}, fn chromosome, {norm_fits, cumm_fits} ->
+        prev_sum = if Enum.empty?(cumm_fits), do: 0, else: hd(cumm_fits)
+        new_fit = base - chromosome.fitness
+        new_sum = prev_sum + new_fit
+        {[new_fit | norm_fits], [new_sum | cumm_fits]}
+      end)
+
+    {
+      hd(cummulative_fitnesses),
+      Enum.reverse(normalized_fitnesses),
+      Enum.reverse(cummulative_fitnesses)
+    }
+  end
+
+  defp do_sus_select(_, [], selected), do: selected
+
+  defp do_sus_select([{_, cumm_fit} | _], [pointer | _], selected) when cumm_fit >= pointer do
+    selected
+  end
+
+  defp do_sus_select([{chromosome, _} | pop_cumm_fit], [_ | pointers], selected) do
+    do_sus_select(pop_cumm_fit, pointers, [chromosome | selected])
   end
 
   defp calculate_mating_pool_size(population_size, selection_rate) do
