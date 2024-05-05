@@ -35,7 +35,7 @@ defmodule CargoProblem do
   def selection_function(population, opts) do
     selection_rate = Keyword.get(opts, :selection_rate)
     population_size = Keyword.get(opts, :population_size)
-    Selection.roulette(population, population_size, selection_rate)
+    Selection.rank(population, population_size, selection_rate)
   end
 
   @impl true

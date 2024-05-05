@@ -68,6 +68,25 @@ defmodule Selection do
     |> misc().shuffle()
   end
 
+  @spec rank(
+          population :: population(),
+          population_size :: integer(),
+          selection_rate :: float(),
+          selection_pressure :: float()
+        ) :: list(chromosome())
+  @doc """
+  TODO: Revised this algorithm
+  """
+  def rank(population, population_size, selection_rate, selection_pressure \\ 1.5) do
+    probabilities = calculate_ranked_probabilities(population_size, selection_pressure)
+    mating_pool_size = calculate_mating_pool_size(population_size, selection_rate)
+
+    population
+    |> Enum.zip(probabilities)
+    |> go_to_casino([], 0, mating_pool_size)
+    |> misc().shuffle()
+  end
+
   @spec stochastic_universal_sampling(
           population :: population(),
           population_size :: integer(),
@@ -201,18 +220,24 @@ defmodule Selection do
   end
 
   defp calculate_probabilities(population, fitness_factor) do
-    {fitnesses_fum, fitnesses, _} = transform_fitnesses(population, fitness_factor)
+    {fitnesses_sum, fitnesses, _} = transform_fitnesses(population, fitness_factor)
 
     [_ | probabilities] =
       fitnesses
       |> Enum.reduce([], fn fitness, probs ->
         prev_prob = if Enum.empty?(probs), do: 0, else: hd(probs)
-        new_prob = prev_prob + fitness / fitnesses_fum
+        new_prob = prev_prob + fitness / fitnesses_sum
         [new_prob | probs]
       end)
 
     [1.0 | probabilities]
     |> Enum.reverse()
+  end
+
+  defp calculate_ranked_probabilities(population_size, selection_pressure) do
+    for i <- 0..(population_size - 1) do
+      2 - selection_pressure + 2 * (selection_pressure - 1) * i / population_size
+    end
   end
 
   # Returns the list of normalized fit vals, the list of cummulative fit vals and the sum of all fit vals
