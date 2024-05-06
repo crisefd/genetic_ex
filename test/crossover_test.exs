@@ -183,4 +183,26 @@ defmodule CrossoverTest do
 
     assert(assertion1 and assertion2)
   end
+
+  test "Order-One Crossover" do
+    parent1 = %Chromosome{genes: [5, 4, 0, 1, 3, 2, 6] |> Arrays.new()}
+    parent2 = %Chromosome{genes: [6, 3, 2, 5, 0, 4, 0] |> Arrays.new()}
+
+    expected1 = [6, 5, 0, 1, 3, 2, 4]
+    expected2 = [5, 3, 2, 4, 0, 1, 6]
+
+    MiscMock
+    |> expect(:random, fn _ -> 2 end)
+    |> expect(:random, fn _ -> 5 end)
+    |> expect(:random, fn _ -> 1 end)
+    |> expect(:random, fn _ -> 2 end)
+
+    {child1, child2} = Crossover.order_one(parent1, parent2)
+
+    actual1 = child1.genes |> Arrays.to_list()
+    actual2 = child2.genes |> Arrays.to_list()
+
+    assert expected1 == actual1
+    assert expected2 == actual2
+  end
 end

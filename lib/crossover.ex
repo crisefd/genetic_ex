@@ -127,4 +127,80 @@ defmodule Crossover do
       %Chromosome{genes: child2_genes}
     }
   end
+
+  @spec order_one(chromosome(), chromosome()) :: {chromosome(), chromosome()}
+  @doc """
+    Performs Order One Crossover
+  """
+  def order_one(parent1, parent2) do
+    genes1 = parent1.genes
+    genes2 = parent2.genes
+
+    child1_genes = get_order_one_child(genes1, genes2)
+    child2_genes = get_order_one_child(genes2, genes1)
+
+    {
+      %Chromosome{genes: child1_genes},
+      %Chromosome{genes: child2_genes}
+    }
+  end
+
+  defp get_order_one_child(genes1, genes2) do
+    num_genes = Arrays.size(genes1)
+    {cut_point1, cut_point2} = get_cut_points(num_genes)
+    range = cut_point1..cut_point2
+    sliced_genes1 = Arrays.slice(genes1, range)
+    blacklist = MapSet.new(sliced_genes1)
+
+    left_over =
+      genes2
+      |> Enum.filter(fn gene ->
+        !MapSet.member?(blacklist, gene)
+      end)
+
+    front = for(_ <- 0..(cut_point1 - 1), do: nil) |> Arrays.new()
+    middle = sliced_genes1
+    back = for(_ <- (cut_point2 + 1)..(num_genes - 1), do: nil) |> Arrays.new()
+
+    initial_child_genes = front |> Arrays.concat(middle) |> Arrays.concat(back)
+
+    {_, child_genes} =
+      0..(num_genes - 1)
+      |> Enum.reduce({left_over, Arrays.new()}, fn i, {lo, result} ->
+        if Enum.empty?(lo) do
+          {lo, result}
+        else
+          if is_nil(initial_child_genes[i]) do
+            {tl(lo), Arrays.append(result, hd(lo))}
+          else
+            {lo, Arrays.append(result, genes1[i])}
+          end
+        end
+      end)
+
+    if Arrays.size(child_genes) != num_genes do
+      IO.inspect(cut_point1, label: "Cut Point 1")
+      IO.inspect(cut_point2, label: "Cut Point 2")
+      IO.inspect(initial_child_genes, label: "Initial child genes")
+      IO.inspect(child_genes, label: "Bad child_genes")
+      System.halt(0)
+    end
+
+    child_genes
+  end
+
+  defp get_cut_points(num_genes) do
+    cut_point1 = misc().random(1..(num_genes - 2))
+    cut_point2 = misc().random(1..(num_genes - 2))
+
+    if cut_point1 != cut_point2 do
+      if cut_point1 < cut_point2 do
+        {cut_point1, cut_point2}
+      else
+        {cut_point2, cut_point1}
+      end
+    else
+      get_cut_points(num_genes)
+    end
+  end
 end
