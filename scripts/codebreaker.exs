@@ -1,29 +1,47 @@
-defmodule Speller do
-  @behaviour Behaviours.Problem
+defmodule Codebreaker do
+  alias Behaviours.Problem
   alias Types.Chromosome
+  import Bitwise
 
-  @range ?a..?z
-  @target "supercalifragilisticexpialidocious"
+  @behaviour Problem
+
+  @bit_range 1..64
 
   @impl true
   def genotype() do
-    size = String.length(@target)
-    genes = for(_ <- 1..size, do: Enum.random(@range)) |> Arrays.new()
-    %Chromosome{genes: genes}
-  end
-
-  @impl true
-  def fitness_function(chromosome) do
-    guess = chromosome.genes |> Arrays.to_list() |> List.to_string()
-    String.jaro_distance(@target, guess)
+    %Chromosome{
+      genes: for(_ <- @bit_range, do: Enum.random(0..1)) |> Arrays.new()
+    }
   end
 
   @impl true
   def selection_function(population, opts) do
     selection_rate = Keyword.get(opts, :selection_rate)
     population_size = Keyword.get(opts, :population_size)
-    Selection.rank(population, population_size, selection_rate)
-    # Selection.roulette(population, population_size, selection_rate)
+    Selection.elitism(population, population_size, selection_rate)
+  end
+
+  @impl true
+  def fitness_function(solution) do
+    target = "ILoveGeneticAlgorithms"
+    encrypted = ~c"LIjs`B`k`qlfDibjwlqmhv"
+
+    cipher =
+      fn word, key ->
+        word
+        |> Enum.map(fn char ->
+          bxor(char, key) |> rem(32768)
+        end)
+      end
+
+    key =
+      solution.genes
+      |> Arrays.map(&Integer.to_string(&1))
+      |> Enum.join("")
+      |> String.to_integer(2)
+
+    guess = List.to_string(cipher.(encrypted, key))
+    String.jaro_distance(target, guess)
   end
 
   @impl true
@@ -56,9 +74,9 @@ defmodule Speller do
   end
 end
 
-Genetic.execute(Speller,
-  mutation_rate: 0.1,
-  selection_rate: 0.5,
+Genetic.execute(Codebreaker,
+  mutation_rate: 0.05,
+  selection_rate: 0.8,
   logging: true,
   population_size: 1000
 )
