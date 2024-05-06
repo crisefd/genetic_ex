@@ -19,7 +19,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    {child1, child2} = Crossover.one_point(@parent1, @parent2)
+    [child1, child2] = Crossover.one_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -37,7 +37,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    {child1, child2} = Crossover.one_point(@parent1, @parent2)
+    [child1, child2] = Crossover.one_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -55,7 +55,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    {child1, child2} = Crossover.one_point(@parent1, @parent2)
+    [child1, child2] = Crossover.one_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -73,7 +73,7 @@ defmodule CrossoverTest do
     |> expect(:random, fn _ -> cut_point1 end)
     |> expect(:random, fn _ -> cut_point2 end)
 
-    {child1, child2} = Crossover.two_point(@parent1, @parent2)
+    [child1, child2] = Crossover.two_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -91,45 +91,7 @@ defmodule CrossoverTest do
     |> expect(:random, fn _ -> cut_point1 end)
     |> expect(:random, fn _ -> cut_point2 end)
 
-    {child1, child2} = Crossover.two_point(@parent1, @parent2)
-
-    actual1 = child1.genes |> Arrays.to_list()
-    actual2 = child2.genes |> Arrays.to_list()
-    assert actual1 == expected1
-    assert actual2 == expected2
-  end
-
-  test "Two-Point Crossover with equal cuts" do
-    cut_point = 2
-    expected1 = [0.3, 0.8, 0.9, -0.5, -0.3]
-    expected2 = [0.3, -0.2, -0.8, -0.2, 0.9]
-
-    MiscMock
-    |> expect(:random, fn _ -> cut_point end)
-    |> expect(:random, fn _ -> cut_point end)
-    |> expect(:split, &Misc.split/2)
-    |> expect(:split, &Misc.split/2)
-
-    {child1, child2} = Crossover.two_point(@parent1, @parent2)
-
-    actual1 = child1.genes |> Arrays.to_list()
-    actual2 = child2.genes |> Arrays.to_list()
-    assert actual1 == expected1
-    assert actual2 == expected2
-  end
-
-  test "Two-Point Crossover in the 0 margin" do
-    cut_point = 0
-    expected1 = [0.3, -0.2, 0.9, -0.5, -0.3]
-    expected2 = [0.3, 0.8, -0.8, -0.2, 0.9]
-
-    MiscMock
-    |> expect(:random, fn _ -> cut_point end)
-    |> expect(:random, fn _ -> cut_point end)
-    |> expect(:split, &Misc.split/2)
-    |> expect(:split, &Misc.split/2)
-
-    {child1, child2} = Crossover.two_point(@parent1, @parent2)
+    [child1, child2] = Crossover.two_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -142,13 +104,13 @@ defmodule CrossoverTest do
     expected2 = [0.3, -0.2, -0.8, -0.5, 0.9]
 
     MiscMock
-    |> expect(:random, fn _ -> 0 end)
-    |> expect(:random, fn _ -> 1 end)
-    |> expect(:random, fn _ -> 0 end)
-    |> expect(:random, fn _ -> 1 end)
-    |> expect(:random, fn _ -> 0 end)
+    |> expect(:random, fn -> 0.0 end)
+    |> expect(:random, fn -> 1.0 end)
+    |> expect(:random, fn -> 0.0 end)
+    |> expect(:random, fn -> 1.0 end)
+    |> expect(:random, fn -> 0.0 end)
 
-    {child1, child2} = Crossover.scattered(@parent1, @parent2)
+    [child1, child2] = Crossover.scattered([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -163,9 +125,9 @@ defmodule CrossoverTest do
     percentage = 0.6
 
     MiscMock
-    |> expect(:random, fn _ -> percentage end)
+    |> expect(:random, fn -> percentage end)
 
-    {child1, child2} = Crossover.arithmetic(@parent1, @parent2)
+    [child1, child2] = Crossover.arithmetic([@parent1, @parent2])
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
 
@@ -197,7 +159,7 @@ defmodule CrossoverTest do
     |> expect(:random, fn _ -> 1 end)
     |> expect(:random, fn _ -> 2 end)
 
-    {child1, child2} = Crossover.order_one(parent1, parent2)
+    [child1, child2] = Crossover.order_one([parent1, parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()

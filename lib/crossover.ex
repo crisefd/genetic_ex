@@ -14,39 +14,50 @@ defmodule Crossover do
   """
   def misc, do: Application.get_env(:genetic, :misc)
 
-  @spec one_point(parent1 :: chromosome(), parent2 :: chromosome(), cut_point :: integer()) ::
-          {chromosome(), chromosome()}
+  @spec one_point(parents :: list(chromosome()), cut_point :: integer()) ::
+          list(chromosome())
+
+  def one_point(parents, cut_point \\ -1)
+
+  def one_point([], _), do: raise("The list of parents cannot be empty")
+
+  def one_point([_parent | []] = parents, _), do: parents
 
   @doc """
     Takes two chromosomes, applies One-Point crossover and returns a tuple containing the two resulting offspring
   """
-  def one_point(parent1, parent2, cut_point \\ -1) do
-    num_genes = Arrays.size(parent1.genes)
+  def one_point(parents, cut_point) do
+    num_genes = Arrays.size(hd(parents).genes)
     cut_point = if cut_point < 0, do: misc().random(0..(num_genes - 1)), else: cut_point
 
-    {{l1, r1}, {l2, r2}} =
-      {misc().split(parent1.genes, cut_point), misc().split(parent2.genes, cut_point)}
+    parents
+    |> preprocess_parents(fn {parent1, parent2}, childs ->
+      {{l1, r1}, {l2, r2}} =
+        {misc().split(parent1.genes, cut_point), misc().split(parent2.genes, cut_point)}
 
-    {
-      %Chromosome{genes: Arrays.concat(l1, r2)},
-      %Chromosome{genes: Arrays.concat(l2, r1)}
-    }
+      child1 = %Chromosome{genes: Arrays.concat(l1, r2)}
+      child2 = %Chromosome{genes: Arrays.concat(l2, r1)}
+
+      [child1, child2 | childs]
+    end)
   end
 
-  @spec two_point(parent1 :: chromosome(), parent2 :: chromosome()) ::
-          {chromosome(), chromosome()}
+  @spec two_point(parents :: list(chromosome())) ::
+          list(chromosome())
+
+  def two_point([]), do: raise("The list of parents cannot be empty")
+
+  def two_point([_parent | []] = parents), do: parents
 
   @doc """
     Takes two chromosomes, applies Two-Point crossover and returns a tuple containing the two resulting offspring
   """
-  def two_point(parent1, parent2) do
-    num_genes = Arrays.size(parent1.genes)
-    cut_point1 = misc().random(0..(num_genes - 1))
-    cut_point2 = misc().random(0..cut_point1)
+  def two_point(parents) do
+    num_genes = Arrays.size(hd(parents).genes)
+    {cut_point1, cut_point2} = get_cut_points(num_genes)
 
-    if cut_point1 == cut_point2 do
-      one_point(parent1, parent2, cut_point1)
-    else
+    parents
+    |> preprocess_parents(fn {parent1, parent2}, childs ->
       left_range = 0..cut_point1
       mid_range = (cut_point1 + 1)..cut_point2
       right_range = (cut_point2 + 1)..(num_genes - 1)
@@ -62,87 +73,112 @@ defmodule Crossover do
       genes1 = l1 |> Arrays.concat(m2) |> Arrays.concat(r1)
       genes2 = l2 |> Arrays.concat(m1) |> Arrays.concat(r2)
 
-      {
-        %Chromosome{genes: genes1},
-        %Chromosome{genes: genes2}
-      }
-    end
+      child1 = %Chromosome{genes: genes1}
+      child2 = %Chromosome{genes: genes2}
+
+      [child1, child2 | childs]
+    end)
   end
 
-  @spec scattered(parent1 :: chromosome(), parent2 :: chromosome()) ::
-          {chromosome(), chromosome()}
+  @spec scattered(parents :: list(chromosome()), rate :: float()) ::
+          list(chromosome())
+
   @doc """
     Takes two chromosomes, applies Scattered (uniform) crossover and returns a tuple containing the two resulting offspring
   """
-  def scattered(parent1, parent2) do
-    num_genes = Arrays.size(parent1.genes)
+  def scattered(parents, rate \\ 0.5)
 
-    {new_genes1, new_genes2} =
-      0..(num_genes - 1)
-      |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {genes1, genes2} ->
-        coin_flip = misc().random(0..1)
+  def scattered([], _), do: raise("The list of parents cannot be empty")
 
-        {gene1, gene2} =
-          if coin_flip == 0 do
-            {Arrays.get(parent2.genes, index), Arrays.get(parent1.genes, index)}
-          else
-            {Arrays.get(parent1.genes, index), Arrays.get(parent2.genes, index)}
-          end
+  def scattered([_parent | []] = parents, _), do: parents
 
-        {Arrays.replace(genes1, index, gene1), Arrays.replace(genes2, index, gene2)}
-      end)
+  def scattered(parents, rate) do
+    num_genes = Arrays.size(hd(parents).genes)
 
-    {
-      %Chromosome{genes: new_genes1},
-      %Chromosome{genes: new_genes2}
-    }
+    parents
+    |> preprocess_parents(fn {parent1, parent2}, childs ->
+      {new_genes1, new_genes2} =
+        0..(num_genes - 1)
+        |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {genes1, genes2} ->
+          coin_flip = misc().random()
+
+          {gene1, gene2} =
+            if coin_flip <= rate do
+              {Arrays.get(parent2.genes, index), Arrays.get(parent1.genes, index)}
+            else
+              {Arrays.get(parent1.genes, index), Arrays.get(parent2.genes, index)}
+            end
+
+          {Arrays.replace(genes1, index, gene1), Arrays.replace(genes2, index, gene2)}
+        end)
+
+      child1 = %Chromosome{genes: new_genes1}
+      child2 = %Chromosome{genes: new_genes2}
+      [child1, child2 | childs]
+    end)
   end
 
-  @spec arithmetic(chromosome(), chromosome()) :: {chromosome(), chromosome()}
+  @spec arithmetic(parents :: list(chromosome()), percentage :: float()) ::
+          list(chromosome())
   @doc """
      Takes two chromosomes, applies Arithemtic crossover and returns a tuple containing the two resulting offspring
   """
-  def arithmetic(parent1, parent2) do
-    r_percentage = misc().random(0..10)
+  def arithmetic(parents, percentage \\ 0.0)
+
+  def arithmetic([], _), do: raise("The list of parents cannot be empty")
+
+  def arithmetic([_parent | []] = parents, _), do: parents
+
+  def arithmetic(parents, percentage) do
+    r_percentage = if percentage == 0.0, do: misc().random(), else: percentage
     s_percentage = 1.0 - r_percentage
-    num_genes = Arrays.size(parent1.genes)
+    num_genes = Arrays.size(hd(parents).genes)
 
-    {child1_genes, child2_genes} =
-      0..(num_genes - 1)
-      |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {child1_genes, child2_genes} ->
-        gene1 = Arrays.get(parent1.genes, index)
-        gene2 = Arrays.get(parent2.genes, index)
+    parents
+    |> preprocess_parents(fn {parent1, parent2}, childs ->
+      {child1_genes, child2_genes} =
+        0..(num_genes - 1)
+        |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {child1_genes, child2_genes} ->
+          gene1 = Arrays.get(parent1.genes, index)
+          gene2 = Arrays.get(parent2.genes, index)
 
-        new_gene1 = r_percentage * gene1 + s_percentage * gene2
-        new_gene2 = s_percentage * gene1 + r_percentage * gene2
+          new_gene1 = r_percentage * gene1 + s_percentage * gene2
+          new_gene2 = s_percentage * gene1 + r_percentage * gene2
 
-        {
-          Arrays.replace(child1_genes, index, new_gene1),
-          Arrays.replace(child2_genes, index, new_gene2)
-        }
-      end)
+          {
+            Arrays.replace(child1_genes, index, new_gene1),
+            Arrays.replace(child2_genes, index, new_gene2)
+          }
+        end)
 
-    {
-      %Chromosome{genes: child1_genes},
-      %Chromosome{genes: child2_genes}
-    }
+      child1 = %Chromosome{genes: child1_genes}
+      child2 = %Chromosome{genes: child2_genes}
+      [child1, child2 | childs]
+    end)
   end
 
-  @spec order_one(chromosome(), chromosome()) :: {chromosome(), chromosome()}
+  @spec order_one(parents :: list(chromosome())) :: list(chromosome())
+
+  def order_one([]), do: raise("The list of parents cannot be empty")
+
+  def order_one([_parent | []] = parents), do: parents
+
   @doc """
     Performs Order One Crossover
   """
-  def order_one(parent1, parent2) do
-    genes1 = parent1.genes
-    genes2 = parent2.genes
+  def order_one(parents) do
+    parents
+    |> preprocess_parents(fn {parent1, parent2}, childs ->
+      genes1 = parent1.genes
+      genes2 = parent2.genes
 
-    child1_genes = get_order_one_child(genes1, genes2)
-    child2_genes = get_order_one_child(genes2, genes1)
+      child1_genes = get_order_one_child(genes1, genes2)
+      child2_genes = get_order_one_child(genes2, genes1)
 
-    {
-      %Chromosome{genes: child1_genes},
-      %Chromosome{genes: child2_genes}
-    }
+      child1 = %Chromosome{genes: child1_genes}
+      child2 = %Chromosome{genes: child2_genes}
+      [child1, child2 | childs]
+    end)
   end
 
   defp get_order_one_child(genes1, genes2) do
@@ -202,5 +238,23 @@ defmodule Crossover do
     else
       get_cut_points(num_genes)
     end
+  end
+
+  defp preprocess_parents([parent1, parent2 | []], crossover_function) do
+    [{parent1, parent2}]
+    |> Enum.reduce(
+      [],
+      crossover_function
+    )
+  end
+
+  defp preprocess_parents(parents, crossover_function) do
+    parents
+    |> Enum.chunk_every(2, 1, [hd(parents)])
+    |> Enum.map(&List.to_tuple(&1))
+    |> Enum.reduce(
+      [],
+      crossover_function
+    )
   end
 end

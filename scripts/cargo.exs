@@ -56,7 +56,7 @@ defmodule CargoProblem do
     |> Enum.reduce(
       population,
       fn {p1, p2}, new_population ->
-        {c1, c2} = Crossover.one_point(p1, p2)
+        [c1, c2] = Crossover.one_point([p1, p2])
         [c1, c2 | new_population]
       end
     )
