@@ -70,8 +70,7 @@ defmodule CrossoverTest do
     expected2 = [0.3, -0.2, -0.8, -0.2, -0.3]
 
     MiscMock
-    |> expect(:random, fn _ -> cut_point1 end)
-    |> expect(:random, fn _ -> cut_point2 end)
+    |> expect(:get_cut_points, fn _ -> {cut_point1, cut_point2} end)
 
     [child1, child2] = Crossover.two_point([@parent1, @parent2])
 
@@ -88,8 +87,7 @@ defmodule CrossoverTest do
     expected2 = @parent1.genes |> Arrays.to_list()
 
     MiscMock
-    |> expect(:random, fn _ -> cut_point1 end)
-    |> expect(:random, fn _ -> cut_point2 end)
+    |> expect(:get_cut_points, fn _ -> {cut_point1, cut_point2} end)
 
     [child1, child2] = Crossover.two_point([@parent1, @parent2])
 
@@ -154,10 +152,13 @@ defmodule CrossoverTest do
     expected2 = [5, 3, 2, 4, 0, 1, 6]
 
     MiscMock
-    |> expect(:random, fn _ -> 2 end)
-    |> expect(:random, fn _ -> 5 end)
-    |> expect(:random, fn _ -> 1 end)
-    |> expect(:random, fn _ -> 2 end)
+    |> expect(:get_cut_points, fn _ -> {2, 5} end)
+    |> expect(:get_cut_points, fn _ -> {1, 2} end)
+
+    # |> expect(:random, fn _ -> 2 end)
+    # |> expect(:random, fn _ -> 5 end)
+    # |> expect(:random, fn _ -> 1 end)
+    # |> expect(:random, fn _ -> 2 end)
 
     [child1, child2] = Crossover.order_one([parent1, parent2])
 

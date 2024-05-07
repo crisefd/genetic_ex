@@ -35,4 +35,19 @@ defmodule Misc do
       {new_min, new_max}
     end)
   end
+
+  def get_cut_points(num_genes) do
+    cut_point1 = random(1..(num_genes - 2))
+    cut_point2 = random(1..(num_genes - 2))
+
+    if cut_point1 != cut_point2 do
+      if cut_point1 < cut_point2 do
+        {cut_point1, cut_point2}
+      else
+        {cut_point2, cut_point1}
+      end
+    else
+      get_cut_points(num_genes)
+    end
+  end
 end

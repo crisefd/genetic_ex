@@ -54,7 +54,7 @@ defmodule Crossover do
   """
   def two_point(parents) do
     num_genes = Arrays.size(hd(parents).genes)
-    {cut_point1, cut_point2} = get_cut_points(num_genes)
+    {cut_point1, cut_point2} = misc().get_cut_points(num_genes)
 
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
@@ -183,7 +183,7 @@ defmodule Crossover do
 
   defp get_order_one_child(genes1, genes2) do
     num_genes = Arrays.size(genes1)
-    {cut_point1, cut_point2} = get_cut_points(num_genes)
+    {cut_point1, cut_point2} = misc().get_cut_points(num_genes)
     range = cut_point1..cut_point2
     sliced_genes1 = Arrays.slice(genes1, range)
     blacklist = MapSet.new(sliced_genes1)
@@ -223,21 +223,6 @@ defmodule Crossover do
     end
 
     child_genes
-  end
-
-  defp get_cut_points(num_genes) do
-    cut_point1 = misc().random(1..(num_genes - 2))
-    cut_point2 = misc().random(1..(num_genes - 2))
-
-    if cut_point1 != cut_point2 do
-      if cut_point1 < cut_point2 do
-        {cut_point1, cut_point2}
-      else
-        {cut_point2, cut_point1}
-      end
-    else
-      get_cut_points(num_genes)
-    end
   end
 
   defp preprocess_parents([parent1, parent2 | []], crossover_function) do

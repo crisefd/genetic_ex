@@ -14,18 +14,34 @@ defmodule Mutation do
   """
   def misc, do: Application.get_env(:genetic, :misc)
 
-  @spec shuffle(chromosome :: chromosome()) :: chromosome()
+  @spec scramble(chromosome :: chromosome(), partial :: boolean()) :: chromosome()
 
   @doc """
-    Shuffles the list of genes of a chromosome
+    Scrambles the list of genes of a chromosome
   """
-  def shuffle(chromosome) do
-    new_genes =
-      chromosome.genes
-      |> misc().shuffle()
-      |> Arrays.new()
+  def scramble(chromosome, partial \\ false)
 
-    %Chromosome{genes: new_genes}
+  def scramble(chromosome, partial) do
+    new_genes =
+      if partial do
+        num_genes = Arrays.size(chromosome.genes)
+        {cut_point1, cut_point2} = misc().get_cut_points(num_genes)
+        sliced_genes = Arrays.slice(chromosome.genes, cut_point1..cut_point2)
+
+        front = Arrays.slice(chromosome.genes, 0..(cut_point1 - 1))
+        middle = sliced_genes |> misc().shuffle() |> Arrays.new()
+        back = Arrays.slice(chromosome.genes, (cut_point2 + 1)..(num_genes - 1))
+
+        front
+        |> Arrays.concat(middle)
+        |> Arrays.concat(back)
+      else
+        chromosome.genes
+        |> misc().shuffle()
+        |> Arrays.new()
+      end
+
+    %Chromosome{chromosome | genes: new_genes}
   end
 
   @spec one_gene(chromosome :: chromosome(), range :: range()) :: chromosome()
@@ -46,7 +62,7 @@ defmodule Mutation do
         chromosome.genes
         |> Arrays.replace(gene_index, mutated_gene)
 
-      %Chromosome{genes: new_genes}
+      %Chromosome{chromosome | genes: new_genes}
     end
   end
 
@@ -62,6 +78,23 @@ defmodule Mutation do
       for(_ <- 1..size, do: misc().random(range))
       |> Arrays.new()
 
-    %Chromosome{genes: new_genes}
+    %Chromosome{chromosome | genes: new_genes}
+  end
+
+  @spec flip(chromosome :: chromosome()) :: chromosome()
+
+  @doc """
+    Flips the binary genes chromosome. Raises exception of non binary genes are present
+  """
+  def flip(chromosome, rate \\ 1.0) do
+    flipped_genes =
+      chromosome.genes
+      |> Arrays.map(fn gene ->
+        if !(gene in 0..1), do: raise("Cannot flip non binary gene")
+
+        if misc().random() <= rate, do: Bitwise.bxor(gene, 1), else: gene
+      end)
+
+    %Chromosome{chromosome | genes: flipped_genes}
   end
 end

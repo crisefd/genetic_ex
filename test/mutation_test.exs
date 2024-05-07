@@ -9,25 +9,66 @@ defmodule MutationTest do
   @base %Chromosome{genes: [1, 2, 3, 4, 5, 6] |> Arrays.new()}
   @allels 0..50
 
-  test "Shuffle Mutation" do
+  test "Full Scramble Mutation" do
     %Chromosome{genes: base_genes} = @base
 
     MiscMock
     |> expect(:shuffle, &Misc.shuffle/1)
 
-    %Chromosome{genes: mutated_genes} = Mutation.shuffle(@base)
+    %Chromosome{genes: mutated_genes} = Mutation.scramble(@base)
 
-    mutated_genes_l = mutated_genes |> Arrays.to_list()
-    base_genes_l = base_genes |> Arrays.to_list()
+    mutated_genes = mutated_genes |> Arrays.to_list()
+    base_genes = base_genes |> Arrays.to_list()
 
     valid_genes =
-      mutated_genes_l
+      mutated_genes
       |> Enum.reduce(true, fn mutated_gene, answer ->
-        Enum.member?(base_genes_l, mutated_gene) and answer
+        Enum.member?(base_genes, mutated_gene) and answer
       end)
 
     assert valid_genes
-    assert base_genes_l !== mutated_genes_l
+    assert base_genes !== mutated_genes
+  end
+
+  test "Partial Scramble Mutation" do
+    %Chromosome{genes: base_genes} = @base
+    cut_point1 = 1
+    cut_point2 = 4
+
+    MiscMock
+    |> expect(:shuffle, &Misc.shuffle/1)
+    |> expect(:get_cut_points, fn _ -> {1, 4} end)
+
+    %Chromosome{genes: mutated_genes} = Mutation.scramble(@base, true)
+
+    assert Arrays.size(mutated_genes) == Arrays.size(base_genes)
+
+    base_genes_set = MapSet.new(base_genes)
+
+    valid_mutated_genes =
+      mutated_genes
+      |> Enum.reduce(true, fn mutated_gene, answer ->
+        Enum.member?(base_genes_set, mutated_gene) && answer
+      end)
+
+    num_genes = Arrays.size(base_genes)
+
+    assert valid_mutated_genes
+    assert base_genes !== mutated_genes
+
+    {leftover_base_genes, left_over_mutated_genes} =
+      0..(num_genes - 1)
+      |> Enum.reduce({[], []}, fn i, {b_genes, m_genes} ->
+        if i in cut_point1..cut_point2 do
+          {b_genes, m_genes}
+        else
+          new_b_genes = [base_genes[i] | b_genes]
+          new_m_genes = [mutated_genes[i] | m_genes]
+          {new_b_genes, new_m_genes}
+        end
+      end)
+
+    assert leftover_base_genes == left_over_mutated_genes
   end
 
   test "One-Gene Mutation" do
@@ -74,5 +115,50 @@ defmodule MutationTest do
 
     assert valid_genes
     assert mutated_genes !== @base.genes
+  end
+
+  test "Flip Mutation 100% rate" do
+    binary_base = %Chromosome{genes: [0, 1, 1, 0, 1, 0] |> Arrays.new()}
+    expected_genes = [1, 0, 0, 1, 0, 1]
+
+    MiscMock
+    |> expect(:random, fn -> 0.5 end)
+    |> expect(:random, fn -> 0.4 end)
+    |> expect(:random, fn -> 0.9 end)
+    |> expect(:random, fn -> 1.0 end)
+    |> expect(:random, fn -> 0.1 end)
+    |> expect(:random, fn -> 0.2 end)
+
+    %Chromosome{genes: mutated_genes} = Mutation.flip(binary_base)
+    actual_genes = Arrays.to_list(mutated_genes)
+    assert expected_genes == actual_genes
+  end
+
+  test "Flip Mutation 50% rate" do
+    binary_base = %Chromosome{genes: [0, 1, 1, 0, 1, 0] |> Arrays.new()}
+    expected_genes = [1, 0, 0, 0, 1, 0]
+
+    MiscMock
+    |> expect(:random, fn -> 0.5 end)
+    |> expect(:random, fn -> 0.4 end)
+    |> expect(:random, fn -> 0.1 end)
+    |> expect(:random, fn -> 0.6 end)
+    |> expect(:random, fn -> 0.8 end)
+    |> expect(:random, fn -> 1.0 end)
+
+    %Chromosome{genes: mutated_genes} = Mutation.flip(binary_base, 0.5)
+    actual_genes = Arrays.to_list(mutated_genes)
+    assert expected_genes == actual_genes
+  end
+
+  test "Flip Mutation Exception" do
+    binary_base = %Chromosome{genes: [0, 2, 1, 0, 1, 0, 0, 1, 1, 1, 0] |> Arrays.new()}
+
+    MiscMock
+    |> expect(:random, fn -> 0.5 end)
+
+    assert_raise RuntimeError, fn ->
+      %Chromosome{genes: _mutated_genes} = Mutation.flip(binary_base)
+    end
   end
 end

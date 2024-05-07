@@ -30,7 +30,7 @@ defmodule OneMaxProblem do
     population
     |> Enum.map(fn chromosome ->
       if :rand.uniform() < mutation_rate do
-        Mutation.shuffle(chromosome)
+        Mutation.scramble(chromosome)
       else
         chromosome
       end
