@@ -161,4 +161,30 @@ defmodule MutationTest do
       %Chromosome{genes: _mutated_genes} = Mutation.flip(binary_base)
     end
   end
+
+  test "Gaussian Mutation" do
+    %Chromosome{genes: base_genes} = @base
+    total_size = Arrays.size(base_genes)
+    mean = Enum.sum(base_genes) / total_size
+
+    variance =
+      base_genes
+      |> Arrays.map(fn gene -> (mean - gene) ** 2 end)
+      |> Enum.sum()
+      |> Kernel./(total_size)
+
+    MiscMock
+    |> expect(:random, fn ^mean, ^variance -> 1.5 end)
+    |> expect(:random, fn ^mean, ^variance -> 2.6 end)
+    |> expect(:random, fn ^mean, ^variance -> 3.7 end)
+    |> expect(:random, fn ^mean, ^variance -> 4.8 end)
+    |> expect(:random, fn ^mean, ^variance -> 5.9 end)
+    |> expect(:random, fn ^mean, ^variance -> 6.0 end)
+
+    %Chromosome{genes: mutated_genes} = Mutation.gaussian(@base)
+
+    expected_genes = [1.5, 2.6, 3.7, 4.8, 5.9, 6.0] |> Arrays.new()
+
+    assert expected_genes == mutated_genes
+  end
 end

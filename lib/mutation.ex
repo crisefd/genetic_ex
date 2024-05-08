@@ -97,4 +97,24 @@ defmodule Mutation do
 
     %Chromosome{chromosome | genes: flipped_genes}
   end
+
+  @doc """
+    Performs gaussian mutation.
+  """
+  def gaussian(%Chromosome{genes: genes} = chromosome) do
+    total_size = Arrays.size(genes)
+    mean = Enum.sum(genes) / total_size
+
+    variance =
+      genes
+      |> Arrays.map(fn gene -> (mean - gene) ** 2 end)
+      |> Enum.sum()
+      |> Kernel./(total_size)
+
+    mutated_genes =
+      genes
+      |> Arrays.map(fn _ -> misc().random(mean, variance) end)
+
+    %Chromosome{chromosome | genes: mutated_genes}
+  end
 end

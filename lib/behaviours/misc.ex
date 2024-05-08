@@ -2,6 +2,7 @@ defmodule Behaviours.Misc do
   alias Types.Chromosome
 
   @callback random() :: number()
+  @callback random(number(), number()) :: number()
   @callback random(Enum.t()) :: number()
   @callback take_random(Enum.t(), integer()) :: Enum.t()
   @callback split(map(), integer()) :: tuple()
