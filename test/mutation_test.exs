@@ -187,4 +187,16 @@ defmodule MutationTest do
 
     assert expected_genes == mutated_genes
   end
+
+  test "Swap Mutation" do
+    MiscMock
+    |> expect(:random, fn _ -> 0 end)
+    |> expect(:random, fn _ -> 5 end)
+
+    %Chromosome{genes: mutated_genes} = Mutation.swap(@base)
+
+    expected_genes = [6, 2, 3, 4, 5, 1] |> Arrays.new()
+
+    assert expected_genes == mutated_genes
+  end
 end

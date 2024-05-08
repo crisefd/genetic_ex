@@ -117,4 +117,28 @@ defmodule Mutation do
 
     %Chromosome{chromosome | genes: mutated_genes}
   end
+
+  @doc """
+    Performs swap mutation
+  """
+  def swap(%Chromosome{genes: genes} = chromosome) do
+    num_genes = Arrays.size(genes)
+
+    if num_genes < 2 do
+      raise "Cannot apply swap mutation to chromosomes with less than 2 genes"
+    end
+
+    i = misc().random(0..(num_genes - 1))
+    j = misc().random(0..(num_genes - 1))
+
+    x = genes[i]
+    y = genes[j]
+
+    mutated_genes =
+      genes
+      |> Arrays.replace(i, y)
+      |> Arrays.replace(j, x)
+
+    %Chromosome{chromosome | genes: mutated_genes}
+  end
 end
