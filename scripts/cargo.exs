@@ -1,4 +1,4 @@
-defmodule CargoProblem do
+defmodule Cargo do
   alias Types.Chromosome
   @behaviour Behaviours.Problem
 
@@ -63,4 +63,4 @@ defmodule CargoProblem do
   end
 end
 
-Genetic.execute(CargoProblem, selection_rate: 0.8, mutation_rate: 0.1) |> IO.inspect()
+Genetic.execute(Cargo, selection_rate: 0.8, mutation_rate: 0.1) |> IO.inspect()
