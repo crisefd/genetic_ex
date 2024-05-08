@@ -141,4 +141,15 @@ defmodule Mutation do
 
     %Chromosome{chromosome | genes: mutated_genes}
   end
+
+  @doc """
+    Performs invert mutation
+  """
+  def invert(%Chromosome{genes: genes} = chromosome) do
+    mutated_genes =
+      genes
+      |> Enum.reverse()
+
+    %Chromosome{chromosome | genes: mutated_genes}
+  end
 end

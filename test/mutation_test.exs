@@ -199,4 +199,14 @@ defmodule MutationTest do
 
     assert expected_genes == mutated_genes
   end
+
+  test "Invert Mutation" do
+    %Chromosome{genes: base_genes} = @base
+
+    %Chromosome{genes: mutated_genes} = Mutation.invert(@base)
+
+    expected_genes = base_genes |> Enum.reverse()
+
+    assert expected_genes == mutated_genes
+  end
 end
