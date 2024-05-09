@@ -21,27 +21,31 @@ defmodule Mutation do
   """
   def scramble(chromosome, partial \\ false)
 
-  def scramble(chromosome, partial) do
+  def scramble(%Chromosome{genes: genes} = chromosome, partial) do
     new_genes =
       if partial do
-        num_genes = Arrays.size(chromosome.genes)
+        num_genes = Arrays.size(genes)
         {cut_point1, cut_point2} = misc().get_cut_points(num_genes)
-        sliced_genes = Arrays.slice(chromosome.genes, cut_point1..cut_point2)
+        sliced_genes = Arrays.slice(genes, cut_point1..cut_point2)
 
-        front = Arrays.slice(chromosome.genes, 0..(cut_point1 - 1))
+        front = Arrays.slice(genes, 0..(cut_point1 - 1))
         middle = sliced_genes |> misc().shuffle() |> Arrays.new()
-        back = Arrays.slice(chromosome.genes, (cut_point2 + 1)..(num_genes - 1))
+        back = Arrays.slice(genes, (cut_point2 + 1)..(num_genes - 1))
 
         front
         |> Arrays.concat(middle)
         |> Arrays.concat(back)
       else
-        chromosome.genes
+        genes
         |> misc().shuffle()
         |> Arrays.new()
       end
 
-    %Chromosome{chromosome | genes: new_genes}
+    if genes != new_genes do
+      %Chromosome{chromosome | genes: new_genes}
+    else
+      scramble(chromosome, partial)
+    end
   end
 
   @spec one_gene(chromosome :: chromosome(), range :: range()) :: chromosome()
