@@ -30,15 +30,6 @@ defmodule Cargo do
   def terminate?(_population, generation, temperature) do
     generation == 1000 || temperature == 0
   end
-
-  @impl true
-  def crossover_function(pairs) do
-    pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = Crossover.one_point([p1, p2])
-      [c1, c2 | children]
-    end)
-  end
 end
 
 Genetic.execute(Cargo, selection_rate: 0.8, mutation_rate: 0.1) |> IO.inspect()

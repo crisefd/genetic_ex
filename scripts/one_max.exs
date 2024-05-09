@@ -17,15 +17,6 @@ defmodule OneMaxProblem do
   def terminate?([best | _], _generation, _temperature) do
     best.fitness == Arrays.size(best.genes)
   end
-
-  @impl true
-  def crossover_function(pairs) do
-    pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = Crossover.one_point([p1, p2])
-      [c1, c2 | children]
-    end)
-  end
 end
 
 Genetic.execute(OneMaxProblem) |> IO.inspect()

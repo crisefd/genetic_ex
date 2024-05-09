@@ -75,7 +75,7 @@ defmodule Genetic do
 
       children =
         parent_pairs
-        |> crossover(&problem.crossover_function/1, opts)
+        |> crossover(opts)
 
       mutants =
         evaluated_population
@@ -163,8 +163,14 @@ defmodule Genetic do
     |> Enum.map(&List.to_tuple/1)
   end
 
-  defp crossover(pairs, crossover_function, _opts) do
-    crossover_function.(pairs)
+  defp crossover(pairs, opts) do
+    crossover_function = Keyword.get(opts, :crossover_function, &Crossover.one_point/1)
+
+    pairs
+    |> Enum.reduce([], fn {p1, p2}, children ->
+      [c1, c2] = crossover_function.([p1, p2])
+      [c1, c2 | children]
+    end)
   end
 
   defp mutate(population, opts) do

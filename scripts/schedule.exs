@@ -42,15 +42,6 @@ defmodule Schedule do
   end
 
   @impl true
-  def crossover_function(pairs) do
-    pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = Crossover.one_point([p1, p2])
-      [c1, c2 | children]
-    end)
-  end
-
-  @impl true
   def terminate?(_, 1000, _), do: true
   def terminate?(_, _, _), do: false
 end

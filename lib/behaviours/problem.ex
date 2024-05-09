@@ -28,10 +28,4 @@ defmodule Behaviours.Problem do
               generation :: integer(),
               temperature :: number()
             ) :: boolean()
-
-  @doc """
-    Reproduction operator.
-  """
-  @callback crossover_function(parent_pairs :: list(pair())) ::
-              population()
 end

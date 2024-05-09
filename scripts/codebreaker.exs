@@ -41,15 +41,6 @@ defmodule Codebreaker do
   def terminate?([best | _], generation, _) do
     best.fitness == 1 || generation == 50_000
   end
-
-  @impl true
-  def crossover_function(pairs) do
-    pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = Crossover.one_point([p1, p2])
-      [c1, c2 | children]
-    end)
-  end
 end
 
 Genetic.execute(Codebreaker,

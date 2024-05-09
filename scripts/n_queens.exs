@@ -32,15 +32,6 @@ defmodule NQueens do
   def terminate?([best | _], generation, _temperature) do
     best.fitness == 8 || generation == 1000
   end
-
-  @impl true
-  def crossover_function(pairs) do
-    pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = Crossover.one_point([p1, p2])
-      [c1, c2 | children]
-    end)
-  end
 end
 
 Genetic.execute(NQueens, selection_rate: 0.8, mutation_rate: 0.05, population_size: 20)
