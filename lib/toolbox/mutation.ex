@@ -1,4 +1,4 @@
-defmodule Mutation do
+defmodule Toolbox.Mutation do
   @moduledoc """
      The Mutation module contains some of the most commonly used mutation strategies for genetic algorithms
   """
@@ -41,11 +41,7 @@ defmodule Mutation do
         |> Arrays.new()
       end
 
-    if genes != new_genes do
-      %Chromosome{chromosome | genes: new_genes}
-    else
-      scramble(chromosome, partial)
-    end
+    %Chromosome{chromosome | genes: new_genes}
   end
 
   @spec one_gene(chromosome :: chromosome(), range :: range()) :: chromosome()

@@ -1,4 +1,4 @@
-defmodule Crossover do
+defmodule Toolbox.Crossover do
   @moduledoc """
     The Crossover module contains some of the most commonly used crossover strategies for genetic algorithms
   """

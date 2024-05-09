@@ -1,6 +1,7 @@
 defmodule Speller do
   @behaviour Behaviours.Problem
   alias Types.Chromosome
+  alias Utilities.Misc
 
   @range ?a..?z
   @target "supercalifragilisticexpialidocious"

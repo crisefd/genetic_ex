@@ -1,4 +1,4 @@
-defmodule Reinsertion do
+defmodule Toolbox.Reinsertion do
   # alias Types.Chromosome
 
   @doc """

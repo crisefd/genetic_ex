@@ -1,6 +1,7 @@
 defmodule Codebreaker do
   alias Behaviours.Problem
   alias Types.Chromosome
+  alias Utilities.Misc
   import Bitwise
 
   @behaviour Problem

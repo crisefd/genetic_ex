@@ -1,5 +1,6 @@
 defmodule Cargo do
   alias Types.Chromosome
+  alias Utilities.Misc
   @behaviour Behaviours.Problem
 
   @profits [6, 5, 8, 9, 6, 7, 3, 1, 2, 6]

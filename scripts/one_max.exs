@@ -1,6 +1,7 @@
 defmodule OneMaxProblem do
   @behaviour Behaviours.Problem
   alias Types.Chromosome
+  alias Utilities.Misc
 
   @impl true
   def genotype() do

@@ -10,6 +10,10 @@ defmodule Genetic do
   """
 
   alias Types.Chromosome
+  alias Toolbox.Crossover
+  alias Toolbox.Mutation
+  alias Toolbox.Reinsertion
+  alias Toolbox.Selection
 
   @type chromosome() :: Chromosome.t()
   @type population() :: list(chromosome())

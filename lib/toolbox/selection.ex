@@ -1,4 +1,4 @@
-defmodule Selection do
+defmodule Toolbox.Selection do
   @moduledoc """
      The Crossover module contains some of the most commonly used selection strategies for genetic algorithms
   """

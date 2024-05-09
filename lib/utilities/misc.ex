@@ -1,4 +1,4 @@
-defmodule Misc do
+defmodule Utilities.Misc do
   @behaviour Behaviours.Misc
 
   def random(mean, variance), do: :rand.normal(mean, variance)

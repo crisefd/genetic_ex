@@ -1,5 +1,6 @@
 defmodule ResinsertionTest do
   alias Types.Chromosome
+  alias Toolbox.Reinsertion
   use ExUnit.Case
   import Mox
   doctest Reinsertion

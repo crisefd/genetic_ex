@@ -1,5 +1,7 @@
 defmodule MutationTest do
   alias Types.Chromosome
+  alias Toolbox.Mutation
+  alias Utilities.Misc
   use ExUnit.Case
   import Mox
   doctest Mutation

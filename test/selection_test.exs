@@ -1,5 +1,7 @@
 defmodule SelectionTest do
   alias Types.Chromosome
+  alias Toolbox.Selection
+  alias Utilities.Misc
   use ExUnit.Case
   import Mox
   doctest Selection

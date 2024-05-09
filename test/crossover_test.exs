@@ -1,5 +1,7 @@
 defmodule CrossoverTest do
   alias Types.Chromosome
+  alias Toolbox.Crossover
+  alias Utilities.Misc
   use ExUnit.Case
   import Mox
   doctest Crossover

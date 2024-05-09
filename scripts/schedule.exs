@@ -1,6 +1,7 @@
 defmodule Schedule do
   alias Behaviours.Problem
   alias Types.Chromosome
+  alias Utilities.Misc
 
   @behaviour Problem
   @penalty -99999

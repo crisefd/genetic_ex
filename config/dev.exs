@@ -1,3 +1,3 @@
 import Config
 
-config :genetic, misc: Misc
+config :genetic, misc: Utilities.Misc

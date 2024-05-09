@@ -1,6 +1,7 @@
 defmodule NQueens do
   alias Behaviours.Problem
   alias Types.Chromosome
+  alias Utilities.Misc
   @behaviour Problem
 
   @range 0..7
