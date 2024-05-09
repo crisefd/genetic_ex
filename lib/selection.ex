@@ -17,7 +17,7 @@ defmodule Selection do
   """
   def misc, do: Application.get_env(:genetic, :misc)
 
-  @spec elitism(
+  @spec elitist(
           population :: population(),
           population_size :: integer(),
           selection_rate :: float()
@@ -26,7 +26,7 @@ defmodule Selection do
   @doc """
     Takes a population sorted by fitness value and forms pairs using contiguous chromosome
   """
-  def elitism(population, population_size, selection_rate) do
+  def elitist(population, population_size, selection_rate) do
     mating_pool_size = calculate_mating_pool_size(population_size, selection_rate)
 
     population

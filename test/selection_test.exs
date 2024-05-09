@@ -35,7 +35,7 @@ defmodule SelectionTest do
         %Chromosome{genes: genes |> Arrays.new(), fitness: Enum.sum(genes)}
       end)
 
-    actual_parents = Selection.elitism(population, population_size, selection_rate)
+    actual_parents = Selection.elitist(population, population_size, selection_rate)
     assert expected_parents == actual_parents
   end
 

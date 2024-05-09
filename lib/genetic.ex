@@ -21,7 +21,7 @@ defmodule Genetic do
   @default_optimization :max
   @default_logging_step 10
   @default_cooling_rate 0.8
-  @default_reinsertion_strategy :none
+  @default_survival_rate 0.1
 
   @spec execute(problem :: module(), opts :: list()) :: map()
 
@@ -69,15 +69,48 @@ defmodule Genetic do
         best_fitness: best.fitness
       }
     else
-      {parent_pairs, pos_selection_population} =
+      {parent_pairs, parents, leftover} =
         evaluated_population
-        |> select(&problem.selection_function/2, opts)
+        |> select(&problem.selection_function/4, opts)
 
-      parent_pairs
-      |> crossover(pos_selection_population, &problem.crossover_function/2, opts)
-      |> mutate(&problem.mutation_function/2, opts)
+      children =
+        parent_pairs
+        |> crossover(&problem.crossover_function/1, opts)
+
+      mutants =
+        evaluated_population
+        |> mutate(&problem.mutation_function/2, opts)
+
+      (&problem.reinsert_function/6)
+      |> reinsert(parents, children ++ mutants, leftover, opts)
       |> evolve(problem, generation + 1, best.fitness, new_temperature, opts)
     end
+  end
+
+  defp reinsert(reinsert_function, parents, offspring, leftover, opts) do
+    survival_rate = Keyword.get(opts, :survival_rate, @default_survival_rate)
+    optimization = Keyword.get(opts, :optimization, @default_optimization)
+    population_size = Keyword.get(opts, :population_size, @default_population_size)
+
+    new_population =
+      apply(reinsert_function, [
+        parents,
+        offspring,
+        leftover,
+        population_size,
+        optimization,
+        survival_rate
+      ])
+
+    new_population_size = Enum.count(new_population)
+
+    if new_population_size < population_size do
+      raise "Your reinsertation strategy produced less individuals
+            (#{new_population_size}) than the minimum required (#{population_size}).
+            The number of inviduals needs to be larger than or equal to #{population_size}"
+    end
+
+    new_population
   end
 
   @spec initialize_population(genotype :: function(), opts :: list()) :: population()
@@ -107,48 +140,31 @@ defmodule Genetic do
   end
 
   defp select(population, selection_function, opts) do
-    reinsertion_strategy = Keyword.get(opts, :reinsertion_strategy, @default_reinsertion_strategy)
     population_size = Keyword.get(opts, :population_size, @default_population_size)
     optimization = Keyword.get(opts, :optimization, @default_optimization)
     selection_rate = Keyword.get(opts, :selection_rate, @default_selection_rate)
 
-    opts = [
-      selection_rate: selection_rate,
-      optimization: optimization,
-      population_size: population_size
-    ]
+    parents = selection_function.(population, population_size, selection_rate, optimization)
 
-    parents = selection_function.(population, opts)
+    parent_pairs = pair_parents_up(parents)
 
-    apply_reinsertion_strategy(parents, population, reinsertion_strategy)
-  end
-
-  defp apply_reinsertion_strategy(parents, population, :children_replace_parents) do
-    parent_pairs = pair_parents(parents)
-
-    new_population =
+    leftover =
       population
       |> MapSet.new()
       |> MapSet.difference(MapSet.new(parents))
       |> MapSet.to_list()
 
-    {parent_pairs, new_population}
+    {parent_pairs, parents, leftover}
   end
 
-  defp apply_reinsertion_strategy(parents, population, :none) do
-    parent_pairs = pair_parents(parents)
-
-    {parent_pairs, population}
-  end
-
-  defp pair_parents(parents) do
+  defp pair_parents_up(parents) do
     parents
     |> Enum.chunk_every(2)
     |> Enum.map(&List.to_tuple/1)
   end
 
-  defp crossover(pairs, population, crossover_function, _opts) do
-    crossover_function.(pairs, population)
+  defp crossover(pairs, crossover_function, _opts) do
+    crossover_function.(pairs)
   end
 
   defp mutate(population, mutation_function, opts) do

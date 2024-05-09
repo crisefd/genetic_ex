@@ -32,14 +32,18 @@ defmodule Behaviours.Problem do
   @doc """
     Chooses a subset of the list of chromosomes for crossover and returns a list of parent pairs
   """
-  @callback selection_function(chromosomes :: population(), opts :: list()) ::
+  @callback selection_function(
+              chromosomes :: population(),
+              population_size :: integer(),
+              selection_rate :: float(),
+              optimization_type :: atom()
+            ) ::
               list(pair())
 
   @doc """
-    Reproduction operator. It takes parent pairs, produces offspring with them and can later add them to the list of chromosomes,
-    If the implementation temporarily increases the size of the population the evaluate() subroutine will take care of downsizing the population
+    Reproduction operator.
   """
-  @callback crossover_function(parent_pairs :: list(pair()), chromosomes :: population()) ::
+  @callback crossover_function(parent_pairs :: list(pair())) ::
               population()
 
   @doc """
@@ -48,4 +52,16 @@ defmodule Behaviours.Problem do
   """
   @callback mutation_function(chromosomes :: population(), mutation_rate :: number()) ::
               population()
+
+  @doc """
+    Reinsertion strategy function.
+  """
+  @callback reinsert_function(
+              parents :: population(),
+              offspring :: population(),
+              leftover :: population(),
+              population_size :: integer(),
+              optimization_type :: atom(),
+              survival_rate :: float()
+            ) :: population()
 end

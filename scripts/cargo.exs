@@ -32,9 +32,7 @@ defmodule Cargo do
   end
 
   @impl true
-  def selection_function(population, opts) do
-    selection_rate = Keyword.get(opts, :selection_rate)
-    population_size = Keyword.get(opts, :population_size)
+  def selection_function(population, population_size, selection_rate, _optimization_type) do
     Selection.rank(population, population_size, selection_rate)
   end
 
@@ -51,15 +49,17 @@ defmodule Cargo do
   end
 
   @impl true
-  def crossover_function(pairs, population) do
+  def crossover_function(pairs) do
     pairs
-    |> Enum.reduce(
-      population,
-      fn {p1, p2}, new_population ->
-        [c1, c2] = Crossover.one_point([p1, p2])
-        [c1, c2 | new_population]
-      end
-    )
+    |> Enum.reduce([], fn {p1, p2}, children ->
+      [c1, c2] = Crossover.one_point([p1, p2])
+      [c1, c2 | children]
+    end)
+  end
+
+  @impl true
+  def reinsert_function(parents, offspring, leftover, _, _, _) do
+    Reinsertion.pure(parents, offspring, leftover)
   end
 end
 

@@ -34,10 +34,8 @@ defmodule NQueens do
   end
 
   @impl true
-  def selection_function(chromosomes, opts) do
-    population_size = Keyword.get(opts, :population_size)
-    selection_rate = Keyword.get(opts, :selection_rate)
-    Selection.elitism(chromosomes, population_size, selection_rate)
+  def selection_function(chromosomes, population_size, selection_rate, _optimization_type) do
+    Selection.elitist(chromosomes, population_size, selection_rate)
   end
 
   @impl true
@@ -53,15 +51,17 @@ defmodule NQueens do
   end
 
   @impl true
-  def crossover_function(pairs, population) do
+  def crossover_function(pairs) do
     pairs
-    |> Enum.reduce(
-      population,
-      fn {p1, p2}, new_population ->
-        [c1, c2] = Crossover.order_one([p1, p2])
-        [c1, c2 | new_population]
-      end
-    )
+    |> Enum.reduce([], fn {p1, p2}, children ->
+      [c1, c2] = Crossover.one_point([p1, p2])
+      [c1, c2 | children]
+    end)
+  end
+
+  @impl true
+  def reinsert_function(parents, offspring, leftover, _, _, _) do
+    Reinsertion.pure(parents, offspring, leftover)
   end
 end
 
