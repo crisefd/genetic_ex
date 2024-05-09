@@ -68,8 +68,22 @@ defmodule Schedule do
   end
 
   @impl true
-  def reinsert_function(parents, offspring, leftover, _, _, _) do
-    Reinsertion.pure(parents, offspring, leftover)
+  def reinsert_function(
+        parents,
+        offspring,
+        leftover,
+        population_size,
+        optimization_type,
+        survival_rate
+      ) do
+    Reinsertion.elitist(
+      parents,
+      offspring,
+      leftover,
+      population_size,
+      optimization_type,
+      survival_rate
+    )
   end
 
   @impl true

@@ -81,16 +81,16 @@ defmodule Genetic do
         evaluated_population
         |> mutate(&problem.mutation_function/2, opts)
 
-      (&problem.reinsert_function/6)
-      |> reinsert(parents, children ++ mutants, leftover, opts)
+      reinsert(parents, children ++ mutants, leftover, opts)
       |> evolve(problem, generation + 1, best.fitness, new_temperature, opts)
     end
   end
 
-  defp reinsert(reinsert_function, parents, offspring, leftover, opts) do
+  defp reinsert(parents, offspring, leftover, opts) do
     survival_rate = Keyword.get(opts, :survival_rate, @default_survival_rate)
     optimization = Keyword.get(opts, :optimization, @default_optimization)
     population_size = Keyword.get(opts, :population_size, @default_population_size)
+    reinsert_function = Keyword.get(opts, :reinsert_function, &Reinsertion.elitist/6)
 
     new_population =
       apply(reinsert_function, [

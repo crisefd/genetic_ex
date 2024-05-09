@@ -56,11 +56,6 @@ defmodule Cargo do
       [c1, c2 | children]
     end)
   end
-
-  @impl true
-  def reinsert_function(parents, offspring, leftover, _, _, _) do
-    Reinsertion.pure(parents, offspring, leftover)
-  end
 end
 
 Genetic.execute(Cargo, selection_rate: 0.8, mutation_rate: 0.1) |> IO.inspect()

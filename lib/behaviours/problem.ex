@@ -52,16 +52,4 @@ defmodule Behaviours.Problem do
   """
   @callback mutation_function(chromosomes :: population(), mutation_rate :: number()) ::
               population()
-
-  @doc """
-    Reinsertion strategy function.
-  """
-  @callback reinsert_function(
-              parents :: population(),
-              offspring :: population(),
-              leftover :: population(),
-              population_size :: integer(),
-              optimization_type :: atom(),
-              survival_rate :: float()
-            ) :: population()
 end

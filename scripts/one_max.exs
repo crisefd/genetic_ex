@@ -43,11 +43,6 @@ defmodule OneMaxProblem do
       [c1, c2 | children]
     end)
   end
-
-  @impl true
-  def reinsert_function(parents, offspring, leftover, _, _, _) do
-    Reinsertion.pure(parents, offspring, leftover)
-  end
 end
 
 Genetic.execute(OneMaxProblem) |> IO.inspect()
