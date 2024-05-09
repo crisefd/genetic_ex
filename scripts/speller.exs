@@ -24,18 +24,6 @@ defmodule Speller do
   end
 
   @impl true
-  def mutation_function(population, mutation_rate) do
-    population
-    |> Enum.map(fn chromosome ->
-      if :rand.uniform() <= mutation_rate do
-        Mutation.scramble(chromosome)
-      else
-        chromosome
-      end
-    end)
-  end
-
-  @impl true
   def crossover_function(pairs) do
     pairs
     |> Enum.reduce([], fn {p1, p2}, children ->

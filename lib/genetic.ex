@@ -79,7 +79,7 @@ defmodule Genetic do
 
       mutants =
         evaluated_population
-        |> mutate(&problem.mutation_function/2, opts)
+        |> mutate(opts)
 
       reinsert(parents, children ++ mutants, leftover, opts)
       |> evolve(problem, generation + 1, best.fitness, new_temperature, opts)
@@ -167,9 +167,18 @@ defmodule Genetic do
     crossover_function.(pairs)
   end
 
-  defp mutate(population, mutation_function, opts) do
+  defp mutate(population, opts) do
     mutation_rate = Keyword.get(opts, :mutation_rate, @default_mutation_rate)
-    mutation_function.(population, mutation_rate)
+    mutation_function = Keyword.get(opts, :mutation_function, &Mutation.scramble/1)
+
+    population
+    |> Enum.map(fn chromosome ->
+      if :rand.uniform() < mutation_rate do
+        mutation_function.(chromosome)
+      else
+        chromosome
+      end
+    end)
   end
 
   defp log(best, generation, temperature, opts) do

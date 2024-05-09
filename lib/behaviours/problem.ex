@@ -34,11 +34,4 @@ defmodule Behaviours.Problem do
   """
   @callback crossover_function(parent_pairs :: list(pair())) ::
               population()
-
-  @doc """
-    Mutation operator. It takes the list of chromosomes and mutates some of their's genes without
-    changing the size of the population
-  """
-  @callback mutation_function(chromosomes :: population(), mutation_rate :: number()) ::
-              population()
 end
