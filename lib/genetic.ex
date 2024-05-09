@@ -31,8 +31,7 @@ defmodule Genetic do
      %{
         evaluations: The number of fitness evaluations
         generations: The number of generations
-        best: The list of genes of the best chromosome,
-        best_fitness: The fitness of the best chromosome
+        best: The best chromosome,
       }
   """
   def execute(problem, opts \\ []) do
@@ -60,10 +59,9 @@ defmodule Genetic do
          new_temperature
        ) do
       population_size = Keyword.get(opts, :population_size, @default_population_size)
-      chromosome_size = best.genes |> Arrays.size()
 
       %{
-        evaluations: population_size * chromosome_size * generation,
+        evaluations: population_size * generation,
         generations: generation,
         best: best.genes,
         best_fitness: best.fitness
