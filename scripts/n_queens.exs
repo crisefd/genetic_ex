@@ -34,11 +34,6 @@ defmodule NQueens do
   end
 
   @impl true
-  def selection_function(chromosomes, population_size, selection_rate, _optimization_type) do
-    Selection.elitist(chromosomes, population_size, selection_rate)
-  end
-
-  @impl true
   def mutation_function(population, mutation_rate) do
     population
     |> Enum.map(fn chromosome ->

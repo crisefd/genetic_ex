@@ -19,11 +19,6 @@ defmodule OneMaxProblem do
   end
 
   @impl true
-  def selection_function(population, population_size, selection_rate, _optimization_type) do
-    Selection.elitist(population, population_size, selection_rate)
-  end
-
-  @impl true
   def mutation_function(population, mutation_rate) do
     population
     |> Enum.map(fn chromosome ->

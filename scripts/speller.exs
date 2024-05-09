@@ -19,12 +19,6 @@ defmodule Speller do
   end
 
   @impl true
-  def selection_function(population, population_size, selection_rate, _optimization_type) do
-    Selection.rank(population, population_size, selection_rate)
-    # Selection.roulette(population, population_size, selection_rate)
-  end
-
-  @impl true
   def terminate?([best | _], generation, _) do
     best.fitness == 1 || generation == 50_000
   end

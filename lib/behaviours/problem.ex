@@ -30,17 +30,6 @@ defmodule Behaviours.Problem do
             ) :: boolean()
 
   @doc """
-    Chooses a subset of the list of chromosomes for crossover and returns a list of parent pairs
-  """
-  @callback selection_function(
-              chromosomes :: population(),
-              population_size :: integer(),
-              selection_rate :: float(),
-              optimization_type :: atom()
-            ) ::
-              list(pair())
-
-  @doc """
     Reproduction operator.
   """
   @callback crossover_function(parent_pairs :: list(pair())) ::

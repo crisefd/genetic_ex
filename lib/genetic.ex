@@ -71,7 +71,7 @@ defmodule Genetic do
     else
       {parent_pairs, parents, leftover} =
         evaluated_population
-        |> select(&problem.selection_function/4, opts)
+        |> select(opts)
 
       children =
         parent_pairs
@@ -139,12 +139,12 @@ defmodule Genetic do
     |> Enum.slice(0, population_size)
   end
 
-  defp select(population, selection_function, opts) do
+  defp select(population, opts) do
     population_size = Keyword.get(opts, :population_size, @default_population_size)
-    optimization = Keyword.get(opts, :optimization, @default_optimization)
+    # optimization = Keyword.get(opts, :optimization, @default_optimization)
     selection_rate = Keyword.get(opts, :selection_rate, @default_selection_rate)
-
-    parents = selection_function.(population, population_size, selection_rate, optimization)
+    selection_function = Keyword.get(opts, :selection_function, &Selection.elitist/3)
+    parents = selection_function.(population, population_size, selection_rate)
 
     parent_pairs = pair_parents_up(parents)
 

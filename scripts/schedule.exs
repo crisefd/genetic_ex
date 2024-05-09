@@ -42,11 +42,6 @@ defmodule Schedule do
   end
 
   @impl true
-  def selection_function(population, population_size, selection_rate, _optimization_type) do
-    Selection.elitist(population, population_size, selection_rate)
-  end
-
-  @impl true
   def mutation_function(population, mutation_rate) do
     population
     |> Enum.map(fn chromosome ->
@@ -65,25 +60,6 @@ defmodule Schedule do
       [c1, c2] = Crossover.one_point([p1, p2])
       [c1, c2 | children]
     end)
-  end
-
-  @impl true
-  def reinsert_function(
-        parents,
-        offspring,
-        leftover,
-        population_size,
-        optimization_type,
-        survival_rate
-      ) do
-    Reinsertion.elitist(
-      parents,
-      offspring,
-      leftover,
-      population_size,
-      optimization_type,
-      survival_rate
-    )
   end
 
   @impl true

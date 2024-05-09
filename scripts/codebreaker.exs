@@ -15,11 +15,6 @@ defmodule Codebreaker do
   end
 
   @impl true
-  def selection_function(population, population_size, selection_rate, _optimization_type) do
-    Selection.elitist(population, population_size, selection_rate)
-  end
-
-  @impl true
   def fitness_function(solution) do
     target = "ILoveGeneticAlgorithms"
     encrypted = ~c"LIjs`B`k`qlfDibjwlqmhv"
