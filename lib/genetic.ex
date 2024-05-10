@@ -99,7 +99,7 @@ defmodule Genetic do
   end
 
   defp record_stats(population, generation, opts) do
-    stats_functions = Keyword.get(opts, :statistics, @default_stats_functions)
+    stats_functions = Keyword.get(opts, :stats_functions, @default_stats_functions)
 
     payload = [
       population: population,
