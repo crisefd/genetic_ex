@@ -4,7 +4,7 @@ defmodule Utilities.Stats do
   @me __MODULE__
   @table_name :statistics
 
-  def get_server_id, do: @me
+  # Server side
 
   def init(state) do
     :ets.new(:statistics, [:set, :public, :named_table])
@@ -26,6 +26,13 @@ defmodule Utilities.Stats do
     {:noreply, state}
   end
 
+  # Client side
+
+  def record(data) do
+    send(@me, {:record, data})
+  end
+
+  # ETS Wrapper
   def insert(generation, stats) do
     :ets.insert(@table_name, {generation, stats})
   end

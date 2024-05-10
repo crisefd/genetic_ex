@@ -1,5 +1,6 @@
 defmodule Types.Chromosome do
   @type t :: %__MODULE__{
+          id: integer(),
           genes: Arrays.t(),
           fitness: number(),
           age: integer()
@@ -7,7 +8,8 @@ defmodule Types.Chromosome do
 
   defstruct genes: Arrays.new([]),
             fitness: 0,
-            age: 0
+            age: 0,
+            id: Base.encode16(:crypto.strong_rand_bytes(64))
 
   defimpl Inspect, for: Types.Chromosome do
     import Inspect.Algebra
@@ -22,6 +24,8 @@ defmodule Types.Chromosome do
         "\t Age: #{chromosome.age}",
         "\n",
         "\t Genes: #{inspect(genes)}",
+        "\n",
+        "\t ID: #{chromosome.id}",
         "\n"
       ])
     end

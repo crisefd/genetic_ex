@@ -57,7 +57,7 @@ result =
     population_size: 20,
     selection_rate: 0.9,
     mutation_rate: 0.1,
-    logging_step: 1,
+    logging: false,
     stats_functions: [average_tiger: &TigerSimulation.average_tiger/1]
   )
   |> IO.inspect()
@@ -66,3 +66,7 @@ generations = Keyword.get(result, :generations)
 
 {_, data} = Utilities.Stats.lookup(div(generations, 2))
 IO.inspect(data, label: "Stats")
+
+Utilities.Genealogy.get_tree()
+|> Graph.vertices()
+|> IO.inspect(label: "Tree")

@@ -16,6 +16,7 @@ defmodule Genetic do
   alias Toolbox.Selection
   alias Utilities.Stats
   alias Utilities.Misc
+  alias Utilities.Genealogy
 
   @type chromosome() :: Chromosome.t()
   @type population() :: list(chromosome())
@@ -101,13 +102,13 @@ defmodule Genetic do
   defp record_stats(population, generation, opts) do
     stats_functions = Keyword.get(opts, :stats_functions, @default_stats_functions)
 
-    payload = [
+    data = [
       population: population,
       generation: generation,
       stats_functions: stats_functions
     ]
 
-    send(Stats.get_server_id(), {:record, payload})
+    Stats.record(data)
 
     population
   end
@@ -143,7 +144,11 @@ defmodule Genetic do
 
   defp initialize_population(genotype, opts) do
     population_size = Keyword.get(opts, :population_size, @default_population_size)
-    for _ <- 1..population_size, do: genotype.()
+    population = for _ <- 1..population_size, do: genotype.()
+
+    add_to_genealogy(population)
+
+    population
   end
 
   @spec evaluate(population :: population(), fitness_function :: function(), opts :: list()) ::
@@ -192,6 +197,8 @@ defmodule Genetic do
     pairs
     |> Enum.reduce([], fn {p1, p2}, children ->
       [c1, c2] = crossover_function.([p1, p2])
+      add_to_genealogy(p1, p2, c1)
+      add_to_genealogy(p1, p2, c2)
       [c1, c2 | children]
     end)
   end
@@ -203,7 +210,9 @@ defmodule Genetic do
     population
     |> Enum.map(fn chromosome ->
       if :rand.uniform() < mutation_rate do
-        mutation_function.(chromosome)
+        mutant = mutation_function.(chromosome)
+        add_to_genealogy(chromosome, mutant)
+        mutant
       else
         chromosome
       end
@@ -213,6 +222,18 @@ defmodule Genetic do
   defp resize_population(population, population_size) do
     population
     |> Enum.slice(0, population_size)
+  end
+
+  defp add_to_genealogy(chromosomes) do
+    Genealogy.add_chromosomes(chromosomes)
+  end
+
+  defp add_to_genealogy(parent, child) do
+    Genealogy.add_chromosomes(parent, child)
+  end
+
+  def add_to_genealogy(parent1, parent2, child) do
+    Genealogy.add_chromosomes(parent1, parent2, child)
   end
 
   defp log(best, generation, temperature, opts) do
