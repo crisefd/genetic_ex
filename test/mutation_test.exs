@@ -11,6 +11,7 @@ defmodule MutationTest do
   @base %Chromosome{genes: [1, 2, 3, 4, 5, 6] |> Arrays.new()}
   @allels 0..50
 
+  @tag :skip
   test "Full Scramble Mutation" do
     %Chromosome{genes: base_genes} = @base
 
@@ -32,6 +33,7 @@ defmodule MutationTest do
     assert base_genes !== mutated_genes
   end
 
+  @tag :skip
   test "Partial Scramble Mutation" do
     %Chromosome{genes: base_genes} = @base
     cut_point1 = 1

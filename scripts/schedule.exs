@@ -47,4 +47,8 @@ defmodule Schedule do
   def terminate?(_, _, _), do: false
 end
 
-Genetic.execute(Schedule, selection_rate: 0.8, mutation_rate: 0.1) |> IO.inspect()
+Genetic.execute(Schedule, selection_rate: 0.8, mutation_rate: 0.1, population_size: 100)
+|> IO.inspect()
+
+{_, stats} = Utilities.Stats.lookup(500)
+IO.inspect(stats, label: "Stats")

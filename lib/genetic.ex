@@ -14,6 +14,8 @@ defmodule Genetic do
   alias Toolbox.Mutation
   alias Toolbox.Reinsertion
   alias Toolbox.Selection
+  alias Utilities.Stats
+  alias Utilities.Misc
 
   @type chromosome() :: Chromosome.t()
   @type population() :: list(chromosome())
@@ -27,16 +29,23 @@ defmodule Genetic do
   @default_cooling_rate 0.8
   @default_survival_rate 0.1
 
-  @spec execute(problem :: module(), opts :: list()) :: map()
+  @default_stats_functions [
+    min_fitness: &Misc.min_fitness/1,
+    max_fitness: &Misc.max_fitness/1,
+    mean_fitness: &Misc.mean_fitness/1,
+    population_size: &Misc.count_chromosomes/1
+  ]
+
+  @spec execute(problem :: module(), opts :: list()) :: list()
 
   @doc """
     Main function of a GA.
     It takes a problem module, some hyperparemeters and returns a solution in the form
-     %{
+     [
         evaluations: The number of fitness evaluations
         generations: The number of generations
         best: The best chromosome,
-      }
+    ]
   """
   def execute(problem, opts \\ []) do
     initialize_population(&problem.genotype/0, opts)
@@ -45,10 +54,13 @@ defmodule Genetic do
 
   defp evolve(population, problem, generation, last_optimal_fitness, temperature, opts) do
     cooling_rate = Keyword.get(opts, :cooling_rate, @default_cooling_rate)
+    population_size = Keyword.get(opts, :population_size, @default_population_size)
 
     evaluated_population =
       population
       |> evaluate(&problem.fitness_function/1, opts)
+      |> record_stats(generation, opts)
+      |> resize_population(population_size)
 
     best = hd(evaluated_population)
 
@@ -62,14 +74,12 @@ defmodule Genetic do
          generation,
          new_temperature
        ) do
-      population_size = Keyword.get(opts, :population_size, @default_population_size)
-
-      %{
+      [
         evaluations: population_size * generation,
         generations: generation,
         best: best.genes,
         best_fitness: best.fitness
-      }
+      ]
     else
       {parent_pairs, parents, leftover} =
         evaluated_population
@@ -86,6 +96,20 @@ defmodule Genetic do
       reinsert(parents, children ++ mutants, leftover, opts)
       |> evolve(problem, generation + 1, best.fitness, new_temperature, opts)
     end
+  end
+
+  defp record_stats(population, generation, opts) do
+    stats_functions = Keyword.get(opts, :statistics, @default_stats_functions)
+
+    payload = [
+      population: population,
+      generation: generation,
+      stats_functions: stats_functions
+    ]
+
+    send(Stats.get_server_id(), {:record, payload})
+
+    population
   end
 
   defp reinsert(parents, offspring, leftover, opts) do
@@ -126,7 +150,6 @@ defmodule Genetic do
           population()
 
   defp evaluate(population, fitness_function, opts) do
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
     optimization = Keyword.get(opts, :optimization, @default_optimization)
 
     sorter = if optimization == :max, do: :desc, else: :asc
@@ -138,12 +161,10 @@ defmodule Genetic do
       %Chromosome{chromosome | fitness: fitness, age: age}
     end)
     |> Enum.sort_by(& &1.fitness, sorter)
-    |> Enum.slice(0, population_size)
   end
 
   defp select(population, opts) do
     population_size = Keyword.get(opts, :population_size, @default_population_size)
-    # optimization = Keyword.get(opts, :optimization, @default_optimization)
     selection_rate = Keyword.get(opts, :selection_rate, @default_selection_rate)
     selection_function = Keyword.get(opts, :selection_function, &Selection.elitist/3)
     parents = selection_function.(population, population_size, selection_rate)
@@ -187,6 +208,11 @@ defmodule Genetic do
         chromosome
       end
     end)
+  end
+
+  defp resize_population(population, population_size) do
+    population
+    |> Enum.slice(0, population_size)
   end
 
   defp log(best, generation, temperature, opts) do

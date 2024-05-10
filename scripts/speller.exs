@@ -21,7 +21,7 @@ defmodule Speller do
 
   @impl true
   def terminate?([best | _], generation, _) do
-    best.fitness == 1 || generation == 50_000
+    best.fitness == 1 || generation == 1_000
   end
 end
 
@@ -32,3 +32,6 @@ Genetic.execute(Speller,
   population_size: 1000
 )
 |> IO.inspect()
+
+{_, stats} = Utilities.Stats.lookup(500)
+IO.inspect(stats, label: "Stats")

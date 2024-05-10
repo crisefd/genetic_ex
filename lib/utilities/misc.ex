@@ -38,6 +38,22 @@ defmodule Utilities.Misc do
     end)
   end
 
+  def min_fitness(population) do
+    Enum.min_by(population, fn chromosome -> chromosome.fitness end).fitness
+  end
+
+  def max_fitness(population) do
+    Enum.max_by(population, fn chromosome -> chromosome.fitness end).fitness
+  end
+
+  def mean_fitness(population) do
+    population
+    |> Enum.reduce(0, fn chromosome, sum -> chromosome.fitness + sum end)
+    |> Kernel./(Enum.count(population))
+  end
+
+  def count_chromosomes(population), do: Enum.count(population)
+
   def get_cut_points(num_genes) do
     cut_point1 = random(1..(num_genes - 2))
     cut_point2 = random(1..(num_genes - 2))

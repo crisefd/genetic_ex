@@ -2,6 +2,7 @@ defmodule OneMaxProblem do
   @behaviour Behaviours.Problem
   alias Types.Chromosome
   alias Utilities.Misc
+  alias Utilities.Stats
 
   @impl true
   def genotype() do
@@ -20,4 +21,16 @@ defmodule OneMaxProblem do
   end
 end
 
-Genetic.execute(OneMaxProblem) |> IO.inspect()
+results = Genetic.execute(OneMaxProblem)
+IO.inspect(results)
+
+generations = Keyword.get(results, :generations)
+
+num_evaluations =
+  0..generations
+  |> Enum.reduce(0, fn generation, sum ->
+    {_, %{population_size: num_evals}} = Utilities.Stats.lookup(generation)
+    num_evals + sum
+  end)
+
+IO.inspect(num_evaluations, label: "Number of evaluations")
