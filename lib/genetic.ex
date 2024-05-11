@@ -76,7 +76,6 @@ defmodule Genetic do
          new_temperature
        ) do
       [
-        evaluations: population_size * generation,
         generations: generation,
         best: best.genes,
         best_fitness: best.fitness

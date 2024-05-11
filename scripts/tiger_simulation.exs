@@ -23,7 +23,7 @@ defmodule TigerSimulation do
 
   @impl true
   def terminate?(_, generation, _) do
-    generation === 1_000
+    generation === 200
   end
 
   def average_tiger(population) do
@@ -52,21 +52,50 @@ defmodule TigerSimulation do
   end
 end
 
-result =
-  Genetic.execute(TigerSimulation,
-    population_size: 20,
-    selection_rate: 0.9,
-    mutation_rate: 0.1,
-    logging: false,
-    stats_functions: [average_tiger: &TigerSimulation.average_tiger/1]
-  )
-  |> IO.inspect()
+# result =
+Genetic.execute(TigerSimulation,
+  population_size: 20,
+  selection_rate: 0.9,
+  mutation_rate: 0.1,
+  logging: false
+  # stats_functions: [average_tiger: &TigerSimulation.average_tiger/1]
+)
+|> IO.inspect()
 
-generations = Keyword.get(result, :generations)
+trans_fun =
+  fn {gen, stats} ->
+    [gen, stats.mean_fitness]
+  end
 
-{_, data} = Utilities.Stats.lookup(div(generations, 2))
-IO.inspect(data, label: "Stats")
+commands = [
+  [:set, :title, "Mean fitness versus generation"],
+  [:plot, "-", :with, :points]
+]
 
-Utilities.Genealogy.get_tree()
-|> Graph.vertices()
-|> IO.inspect(label: "Tree")
+Utilities.Stats.plot(trans_fun, commands)
+
+# generations = Keyword.get(result, :generations)
+
+# {_, data} = Utilities.Stats.lookup(div(generations, 2))
+# IO.inspect(data, label: "Stats")
+
+# genealogy = Utilities.Genealogy.get_tree()
+
+# {:ok, dot} = Graph.Serializers.DOT.serialize(genealogy)
+
+# path = "scripts/output/tiger_simulation.dot" |> Path.absname()
+
+# dotfile =
+#   with {:ok, dotfile} <- File.open(path, [:write]) do
+#     dotfile
+#   else
+#     {:error, _} ->
+#       :ok = File.touch(path, :erlang.universaltime())
+#       {:ok, dotfile} = File.open(path, [:write])
+#       dotfile
+#   end
+
+# :ok = IO.binwrite(dotfile, dot)
+# :ok = File.close(dotfile)
+
+Utilities.Stats.drop()

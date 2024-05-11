@@ -23,6 +23,7 @@ defmodule Genetic.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:gnuplot, "~> 1.22"},
       {:libgraph, "~> 0.16.0"},
       {:arrays, "~> 2.1"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},

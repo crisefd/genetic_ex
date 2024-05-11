@@ -32,6 +32,17 @@ defmodule Utilities.Stats do
     send(@me, {:record, data})
   end
 
+  # GNU Plot
+
+  def plot(transformation_function, gnuplot_cmds) do
+    data =
+      :ets.tab2list(@table_name)
+      |> Enum.map(transformation_function)
+
+    {:ok, _} =
+      Gnuplot.plot(gnuplot_cmds, [data])
+  end
+
   # ETS Wrapper
   def insert(generation, stats) do
     :ets.insert(@table_name, {generation, stats})
@@ -46,6 +57,10 @@ defmodule Utilities.Stats do
         IO.puts("No stats found for generation #{generation}")
         %{}
     end
+  end
+
+  def drop() do
+    :ets.delete(@table_name)
   end
 
   defp calculate(stats, population) do
