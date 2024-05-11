@@ -8,7 +8,8 @@ defmodule Genetic.MixProject do
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: elixirc_paths(Mix.env())
+      elixirc_paths: elixirc_paths(Mix.env()),
+      compilers: Mix.compilers() ++ [:yecc, :leex]
     ]
   end
 
@@ -24,6 +25,7 @@ defmodule Genetic.MixProject do
   defp deps do
     [
       {:gnuplot, "~> 1.22"},
+      {:alex, "~> 0.3.2"},
       {:libgraph, "~> 0.16.0"},
       {:arrays, "~> 2.1"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},

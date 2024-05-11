@@ -1,4 +1,5 @@
 %{
+  "alex": {:hex, :alex, "0.3.2", "b6fa1d744783707e1ff068ecdef2eb993f9b05a2ebe9c97ba67b05902c0aaa9c", [:mix], [], "hexpm", "9d40610d06857f5a321923f28c44ca08575ad64594cbbfa4352eb115e5c0566e"},
   "arrays": {:hex, :arrays, "2.1.1", "4c495cddeb5d31814a739e79db42d012e62ec033902597b7b930c221cc8a3fca", [:mix], [{:extractable, "~> 1.0", [hex: :extractable, repo: "hexpm", optional: false]}, {:fun_land, "~> 0.10.0", [hex: :fun_land, repo: "hexpm", optional: true]}, {:insertable, "~> 1.0", [hex: :insertable, repo: "hexpm", optional: false]}], "hexpm", "f6c03081303e3240267e048f44f821305100ae824030208131b30ae5a681f33a"},
   "dialyxir": {:hex, :dialyxir, "1.4.3", "edd0124f358f0b9e95bfe53a9fcf806d615d8f838e2202a9f430d59566b6b53b", [:mix], [{:erlex, ">= 0.2.6", [hex: :erlex, repo: "hexpm", optional: false]}], "hexpm", "bf2cfb75cd5c5006bec30141b131663299c661a864ec7fbbc72dfa557487a986"},
   "earmark_parser": {:hex, :earmark_parser, "1.4.39", "424642f8335b05bb9eb611aa1564c148a8ee35c9c8a8bba6e129d51a3e3c6769", [:mix], [], "hexpm", "06553a88d1f1846da9ef066b87b57c6f605552cfbe40d20bd8d59cc6bde41944"},
