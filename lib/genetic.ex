@@ -92,11 +92,12 @@ defmodule Genetic do
 
   def evaluate(population, fitness_function, opts) do
     optimization = Keyword.get(opts, :optimization, @default_optimization)
-
+    parallelized_fitness_evaluation? = Keyword.get(opts, :parallelized_fitness_evaluation?, false)
     sorter = if optimization == :max, do: :desc, else: :asc
+    map_function = if parallelized_fitness_evaluation?, do: &Misc.pmap/2, else: &Enum.map/2
 
     population
-    |> Enum.map(fn chromosome ->
+    |> map_function.(fn chromosome ->
       fitness = fitness_function.(chromosome)
       age = chromosome.age + 1
       %Chromosome{chromosome | fitness: fitness, age: age}
@@ -108,14 +109,13 @@ defmodule Genetic do
 
   def crossover(pairs, opts) do
     crossover_function = Keyword.get(opts, :crossover_function, &Crossover.one_point/1)
+    parallelized_crossover? = Keyword.get(opts, :parallelized_crossover?, false)
 
-    pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = crossover_function.([p1, p2])
-      add_to_genealogy(p1, p2, c1)
-      add_to_genealogy(p1, p2, c2)
-      [c1, c2 | children]
-    end)
+    if parallelized_crossover? do
+      parallel_crossover(pairs, crossover_function)
+    else
+      sequential_crossover(pairs, crossover_function)
+    end
   end
 
   @spec mutate(population :: list(chromosome()), opts :: keyword()) :: list(chromosome())
@@ -123,17 +123,13 @@ defmodule Genetic do
   def mutate(population, opts) do
     mutation_rate = Keyword.get(opts, :mutation_rate, @default_mutation_rate)
     mutation_function = Keyword.get(opts, :mutation_function, &Mutation.scramble/1)
+    parallelized_mutate? = Keyword.get(opts, :parallelized_mutate?, false)
 
-    population
-    |> Enum.reduce([], fn chromosome, mutants ->
-      if :rand.uniform() <= mutation_rate do
-        mutant = mutation_function.(chromosome)
-        add_to_genealogy(chromosome, mutant)
-        [mutant | mutants]
-      else
-        mutants
-      end
-    end)
+    if parallelized_mutate? do
+      sequential_mutate(population, mutation_rate, mutation_function)
+    else
+      parallel_mutate(population, mutation_rate, mutation_function)
+    end
   end
 
   @spec reinsert(
@@ -263,6 +259,50 @@ defmodule Genetic do
 
   def add_to_genealogy(parent1, parent2, child) do
     Genealogy.add_chromosomes(parent1, parent2, child)
+  end
+
+  defp parallel_crossover(pairs, crossover_function) do
+    pairs
+    |> Misc.pmap(fn {p1, p2} ->
+      [c1, c2] = crossover_function.([p1, p2])
+      add_to_genealogy(p1, p2, c1)
+      add_to_genealogy(p1, p2, c2)
+      {c1, c2}
+    end)
+    |> Enum.flat_map(fn {c1, c2} -> [c1, c2] end)
+  end
+
+  defp sequential_crossover(pairs, crossover_function) do
+    pairs
+    |> Enum.reduce([], fn {p1, p2}, children ->
+      [c1, c2] = crossover_function.([p1, p2])
+      add_to_genealogy(p1, p2, c1)
+      add_to_genealogy(p1, p2, c2)
+      [c1, c2 | children]
+    end)
+  end
+
+  defp parallel_mutate(population, mutation_rate, mutation_function) do
+    population
+    |> Enum.filter(fn _ -> Misc.random() <= mutation_rate end)
+    |> Misc.pmap(fn chromosome ->
+      mutant = mutation_function.(chromosome)
+      add_to_genealogy(chromosome, mutant)
+      mutant
+    end)
+  end
+
+  defp sequential_mutate(population, mutation_rate, mutation_function) do
+    population
+    |> Enum.reduce([], fn chromosome, mutants ->
+      if Misc.random() <= mutation_rate do
+        mutant = mutation_function.(chromosome)
+        add_to_genealogy(chromosome, mutant)
+        [mutant | mutants]
+      else
+        mutants
+      end
+    end)
   end
 
   defp log(best, generation, temperature, opts) do
