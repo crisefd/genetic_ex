@@ -24,6 +24,8 @@ defmodule Genetic.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:exprof, "~> 0.2.4"},
+      {:benchee, "~> 1.3"},
       {:gnuplot, "~> 1.22"},
       {:alex, "~> 0.3.2"},
       {:libgraph, "~> 0.16.0"},

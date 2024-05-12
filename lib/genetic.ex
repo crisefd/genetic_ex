@@ -19,7 +19,6 @@ defmodule Genetic do
   alias Utilities.Genealogy
 
   @type chromosome() :: Chromosome.t()
-  @type population() :: list(chromosome())
   @type pair() :: {chromosome(), chromosome()}
 
   @default_population_size 1000
@@ -37,23 +36,154 @@ defmodule Genetic do
     population_size: &Misc.count_chromosomes/1
   ]
 
-  @spec execute(problem :: module(), opts :: list()) :: list()
+  @spec execute(problem :: module(), opts :: keyword()) :: keyword()
 
   @doc """
     Main function of a GA.
     It takes a problem module, some hyperparemeters and returns a solution in the form
      [
-        evaluations: The number of fitness evaluations
         generations: The number of generations
-        best: The best chromosome,
+        best_genes: The best chromosome,
+        best_fitness: The fitness of the best chromosome
     ]
   """
   def execute(problem, opts \\ []) do
     initialize_population(&problem.genotype/0, opts)
-    |> evolve(problem, 0, 0, 0, opts)
+    |> evolve(problem, 0, 0, 0.0, opts)
   end
 
-  defp evolve(population, problem, generation, last_optimal_fitness, temperature, opts) do
+  @spec initialize_population(genotype :: function(), opts :: keyword()) :: list(chromosome())
+
+  def initialize_population(genotype, opts) do
+    population_size = Keyword.get(opts, :population_size, @default_population_size)
+    population = for _ <- 1..population_size, do: genotype.()
+
+    add_to_genealogy(population)
+
+    population
+  end
+
+  @spec select(list(chromosome()), list()) ::
+          {list(pair()), list(chromosome()), list(chromosome())}
+
+  def select(population, opts) do
+    population_size = Keyword.get(opts, :population_size, @default_population_size)
+    selection_rate = Keyword.get(opts, :selection_rate, @default_selection_rate)
+    selection_function = Keyword.get(opts, :selection_function, &Selection.elitist/3)
+    parents = selection_function.(population, population_size, selection_rate)
+
+    parent_pairs = pair_parents_up(parents)
+
+    leftover =
+      population
+      |> MapSet.new()
+      |> MapSet.difference(MapSet.new(parents))
+      |> MapSet.to_list()
+
+    {parent_pairs, parents, leftover}
+  end
+
+  @spec evaluate(
+          population :: list(chromosome()),
+          fitness_function :: function(),
+          opts :: keyword()
+        ) ::
+          list(chromosome())
+
+  def evaluate(population, fitness_function, opts) do
+    optimization = Keyword.get(opts, :optimization, @default_optimization)
+
+    sorter = if optimization == :max, do: :desc, else: :asc
+
+    population
+    |> Enum.map(fn chromosome ->
+      fitness = fitness_function.(chromosome)
+      age = chromosome.age + 1
+      %Chromosome{chromosome | fitness: fitness, age: age}
+    end)
+    |> Enum.sort_by(& &1.fitness, sorter)
+  end
+
+  @spec crossover(pairs :: list(pair()), opts :: keyword()) :: list(chromosome())
+
+  def crossover(pairs, opts) do
+    crossover_function = Keyword.get(opts, :crossover_function, &Crossover.one_point/1)
+
+    pairs
+    |> Enum.reduce([], fn {p1, p2}, children ->
+      [c1, c2] = crossover_function.([p1, p2])
+      add_to_genealogy(p1, p2, c1)
+      add_to_genealogy(p1, p2, c2)
+      [c1, c2 | children]
+    end)
+  end
+
+  @spec mutate(population :: list(chromosome()), opts :: keyword()) :: list(chromosome())
+
+  def mutate(population, opts) do
+    mutation_rate = Keyword.get(opts, :mutation_rate, @default_mutation_rate)
+    mutation_function = Keyword.get(opts, :mutation_function, &Mutation.scramble/1)
+
+    population
+    |> Enum.reduce([], fn chromosome, mutants ->
+      if :rand.uniform() <= mutation_rate do
+        mutant = mutation_function.(chromosome)
+        add_to_genealogy(chromosome, mutant)
+        [mutant | mutants]
+      else
+        mutants
+      end
+    end)
+  end
+
+  @spec reinsert(
+          parents :: list(chromosome()),
+          offspring :: list(chromosome()),
+          leftover :: list(chromosome()),
+          opts :: keyword()
+        ) :: list(chromosome())
+
+  def reinsert(parents, offspring, leftover, opts) do
+    survival_rate = Keyword.get(opts, :survival_rate, @default_survival_rate)
+    optimization = Keyword.get(opts, :optimization, @default_optimization)
+    population_size = Keyword.get(opts, :population_size, @default_population_size)
+    reinsert_function = Keyword.get(opts, :reinsert_function, &Reinsertion.elitist/6)
+
+    new_population =
+      apply(reinsert_function, [
+        parents,
+        offspring,
+        leftover,
+        population_size,
+        optimization,
+        survival_rate
+      ])
+
+    new_population_size = Enum.count(new_population)
+
+    if new_population_size < population_size do
+      raise "Your reinsertation strategy produced less individuals
+            (#{new_population_size}) than the minimum required (#{population_size}).
+            The number of inviduals needs to be larger than or equal to #{population_size}"
+    end
+
+    new_population
+  end
+
+  @spec evolve(
+          population :: list(chromosome()),
+          problem :: module(),
+          generation :: integer(),
+          last_optimal_fitness :: number(),
+          temperature :: float(),
+          opts :: keyword()
+        ) :: keyword()
+
+  @doc """
+    Performs Evaluation -> Selection -> Crossover -> Mutation -> Reinsertion
+    in a loop and returns the result when Termination criteria has been met
+  """
+  def evolve(population, problem, generation, last_optimal_fitness, temperature, opts) do
     cooling_rate = Keyword.get(opts, :cooling_rate, @default_cooling_rate)
     population_size = Keyword.get(opts, :population_size, @default_population_size)
 
@@ -77,7 +207,7 @@ defmodule Genetic do
        ) do
       [
         generations: generation,
-        best: best.genes,
+        best_genes: best.genes,
         best_fitness: best.fitness
       ]
     else
@@ -112,110 +242,10 @@ defmodule Genetic do
     population
   end
 
-  defp reinsert(parents, offspring, leftover, opts) do
-    survival_rate = Keyword.get(opts, :survival_rate, @default_survival_rate)
-    optimization = Keyword.get(opts, :optimization, @default_optimization)
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
-    reinsert_function = Keyword.get(opts, :reinsert_function, &Reinsertion.elitist/6)
-
-    new_population =
-      apply(reinsert_function, [
-        parents,
-        offspring,
-        leftover,
-        population_size,
-        optimization,
-        survival_rate
-      ])
-
-    new_population_size = Enum.count(new_population)
-
-    if new_population_size < population_size do
-      raise "Your reinsertation strategy produced less individuals
-            (#{new_population_size}) than the minimum required (#{population_size}).
-            The number of inviduals needs to be larger than or equal to #{population_size}"
-    end
-
-    new_population
-  end
-
-  @spec initialize_population(genotype :: function(), opts :: list()) :: population()
-
-  defp initialize_population(genotype, opts) do
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
-    population = for _ <- 1..population_size, do: genotype.()
-
-    add_to_genealogy(population)
-
-    population
-  end
-
-  @spec evaluate(population :: population(), fitness_function :: function(), opts :: list()) ::
-          population()
-
-  defp evaluate(population, fitness_function, opts) do
-    optimization = Keyword.get(opts, :optimization, @default_optimization)
-
-    sorter = if optimization == :max, do: :desc, else: :asc
-
-    population
-    |> Enum.map(fn chromosome ->
-      fitness = fitness_function.(chromosome)
-      age = chromosome.age + 1
-      %Chromosome{chromosome | fitness: fitness, age: age}
-    end)
-    |> Enum.sort_by(& &1.fitness, sorter)
-  end
-
-  defp select(population, opts) do
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
-    selection_rate = Keyword.get(opts, :selection_rate, @default_selection_rate)
-    selection_function = Keyword.get(opts, :selection_function, &Selection.elitist/3)
-    parents = selection_function.(population, population_size, selection_rate)
-
-    parent_pairs = pair_parents_up(parents)
-
-    leftover =
-      population
-      |> MapSet.new()
-      |> MapSet.difference(MapSet.new(parents))
-      |> MapSet.to_list()
-
-    {parent_pairs, parents, leftover}
-  end
-
   defp pair_parents_up(parents) do
     parents
     |> Enum.chunk_every(2)
     |> Enum.map(&List.to_tuple/1)
-  end
-
-  defp crossover(pairs, opts) do
-    crossover_function = Keyword.get(opts, :crossover_function, &Crossover.one_point/1)
-
-    pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = crossover_function.([p1, p2])
-      add_to_genealogy(p1, p2, c1)
-      add_to_genealogy(p1, p2, c2)
-      [c1, c2 | children]
-    end)
-  end
-
-  defp mutate(population, opts) do
-    mutation_rate = Keyword.get(opts, :mutation_rate, @default_mutation_rate)
-    mutation_function = Keyword.get(opts, :mutation_function, &Mutation.scramble/1)
-
-    population
-    |> Enum.map(fn chromosome ->
-      if :rand.uniform() < mutation_rate do
-        mutant = mutation_function.(chromosome)
-        add_to_genealogy(chromosome, mutant)
-        mutant
-      else
-        chromosome
-      end
-    end)
   end
 
   defp resize_population(population, population_size) do

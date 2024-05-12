@@ -17,13 +17,13 @@ end
 
 defmodule Tetris do
   alias Types.Chromosome
-
+  alias Utilities.Misc
   @behaviour Behaviours.Problem
 
   @impl true
   def genotype() do
     game = Agent.get(TetrisInterface, & &1)
-    genes = for(_ <- 1..1000, do: Utilities.Misc.random(game.legal_actions)) |> Arrays.new()
+    genes = for(_ <- 1..1000, do: Misc.random(game.legal_actions)) |> Arrays.new()
     %Chromosome{genes: genes}
   end
 
