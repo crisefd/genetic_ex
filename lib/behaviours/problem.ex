@@ -8,12 +8,13 @@ defmodule Behaviours.Problem do
 
   @type chromosome() :: Chromosome.t()
   @type population() :: list(chromosome())
-  @type pair :: {chromosome(), chromosome()}
+  @type pair() :: {chromosome(), chromosome()}
+  @type bound() :: {number(), number()}
 
   @doc """
     Randomly creates a new chromosome to initialize the population
   """
-  @callback genotype() :: chromosome()
+  @callback genotype(bounds :: list(bound())) :: chromosome()
 
   @doc """
     It tells you how good a solution (chromosome) is

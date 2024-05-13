@@ -7,7 +7,7 @@ defmodule NQueens do
   @range 0..7
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     %Chromosome{
       genes: Misc.shuffle(@range) |> Arrays.new()
     }

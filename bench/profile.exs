@@ -4,7 +4,7 @@ defmodule Test do
   @behaviour Behaviours.Problem
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     genes = for(_ <- 1..100, do: Misc.random(0..1)) |> Arrays.new()
     %Chromosome{genes: genes}
   end

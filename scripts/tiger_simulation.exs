@@ -9,7 +9,7 @@ defmodule TigerSimulation do
   @tundra_scores [1.0, 3.0, -2.0, -1.0, 0.5, 2.0, 1.0, 0.0]
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     genes = for(_ <- 1..8, do: Misc.random(0..1)) |> Arrays.new()
     %Chromosome{genes: genes}
   end

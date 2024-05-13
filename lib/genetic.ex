@@ -21,13 +21,13 @@ defmodule Genetic do
   @type chromosome() :: Chromosome.t()
   @type pair() :: {chromosome(), chromosome()}
 
-  @default_population_size 1000
+  @default_population_size 100
   @default_mutation_rate 0.05
   @default_selection_rate 0.8
   @default_optimization :max
   @default_logging_step 10
   @default_cooling_rate 0.8
-  @default_survival_rate 0.1
+  @default_survival_rate 0.2
 
   @default_stats_functions [
     min_fitness: &Misc.min_fitness/1,
@@ -48,7 +48,7 @@ defmodule Genetic do
     ]
   """
   def execute(problem, opts \\ []) do
-    initialize_population(&problem.genotype/0, opts)
+    initialize_population(&problem.genotype/1, opts)
     |> evolve(problem, 0, 0, 0.0, opts)
   end
 
@@ -56,7 +56,8 @@ defmodule Genetic do
 
   def initialize_population(genotype, opts) do
     population_size = Keyword.get(opts, :population_size, @default_population_size)
-    population = for _ <- 1..population_size, do: genotype.()
+    bounds_function = Keyword.get(opts, :bounds_function, nil)
+    population = for _ <- 1..population_size, do: genotype.(bounds_function)
 
     add_to_genealogy(population)
 
@@ -94,15 +95,12 @@ defmodule Genetic do
     optimization = Keyword.get(opts, :optimization, @default_optimization)
     parallelized_fitness_evaluation? = Keyword.get(opts, :parallelized_fitness_evaluation?, false)
     sorter = if optimization == :max, do: :desc, else: :asc
-    map_function = if parallelized_fitness_evaluation?, do: &Misc.pmap/2, else: &Enum.map/2
 
-    population
-    |> map_function.(fn chromosome ->
-      fitness = fitness_function.(chromosome)
-      age = chromosome.age + 1
-      %Chromosome{chromosome | fitness: fitness, age: age}
-    end)
-    |> Enum.sort_by(& &1.fitness, sorter)
+    if parallelized_fitness_evaluation? do
+      parallel_evaluate(population, fitness_function, sorter)
+    else
+      sequential_evaluate(population, fitness_function, sorter)
+    end
   end
 
   @spec crossover(pairs :: list(pair()), opts :: keyword()) :: list(chromosome())
@@ -126,9 +124,9 @@ defmodule Genetic do
     parallelized_mutate? = Keyword.get(opts, :parallelized_mutate?, false)
 
     if parallelized_mutate? do
-      sequential_mutate(population, mutation_rate, mutation_function)
-    else
       parallel_mutate(population, mutation_rate, mutation_function)
+    else
+      sequential_mutate(population, mutation_rate, mutation_function)
     end
   end
 
@@ -264,10 +262,12 @@ defmodule Genetic do
   defp parallel_crossover(pairs, crossover_function) do
     pairs
     |> Misc.pmap(fn {p1, p2} ->
-      [c1, c2] = crossover_function.([p1, p2])
-      add_to_genealogy(p1, p2, c1)
-      add_to_genealogy(p1, p2, c2)
-      {c1, c2}
+      fn ->
+        [c1, c2] = crossover_function.([p1, p2])
+        add_to_genealogy(p1, p2, c1)
+        add_to_genealogy(p1, p2, c2)
+        {c1, c2}
+      end
     end)
     |> Enum.flat_map(fn {c1, c2} -> [c1, c2] end)
   end
@@ -286,9 +286,11 @@ defmodule Genetic do
     population
     |> Enum.filter(fn _ -> Misc.random() <= mutation_rate end)
     |> Misc.pmap(fn chromosome ->
-      mutant = mutation_function.(chromosome)
-      add_to_genealogy(chromosome, mutant)
-      mutant
+      fn ->
+        mutant = mutation_function.(chromosome)
+        add_to_genealogy(chromosome, mutant)
+        mutant
+      end
     end)
   end
 
@@ -303,6 +305,28 @@ defmodule Genetic do
         mutants
       end
     end)
+  end
+
+  defp sequential_evaluate(population, fitness_function, sorter) do
+    population
+    |> Enum.map(fn chromosome ->
+      fitness = fitness_function.(chromosome)
+      age = chromosome.age + 1
+      %Chromosome{chromosome | fitness: fitness, age: age}
+    end)
+    |> Enum.sort_by(& &1.fitness, sorter)
+  end
+
+  defp parallel_evaluate(population, fitness_function, sorter) do
+    population
+    |> Misc.pmap(fn chromosome ->
+      fn ->
+        fitness = fitness_function.(chromosome)
+        age = chromosome.age + 1
+        %Chromosome{chromosome | fitness: fitness, age: age}
+      end
+    end)
+    |> Enum.sort_by(& &1.fitness, sorter)
   end
 
   defp log(best, generation, temperature, opts) do

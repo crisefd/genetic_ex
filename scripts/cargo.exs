@@ -8,7 +8,7 @@ defmodule Cargo do
   @weight_limit 40
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     %Chromosome{
       genes: for(_ <- 0..10, do: Enum.random(0..1)) |> Arrays.new()
     }

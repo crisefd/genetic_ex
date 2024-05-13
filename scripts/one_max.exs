@@ -5,7 +5,7 @@ defmodule OneMaxProblem do
   alias Utilities.Stats
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     genes = Arrays.new(for _ <- 1..1000, do: Enum.random(0..1))
     %Chromosome{genes: genes}
   end
@@ -21,7 +21,13 @@ defmodule OneMaxProblem do
   end
 end
 
-results = Genetic.execute(OneMaxProblem)
+results =
+  Genetic.execute(OneMaxProblem,
+    parallelized_fitness_evaluation?: true,
+    parallelized_crossover?: true,
+    parallelized_crossover?: true
+  )
+
 IO.inspect(results)
 
 generations = Keyword.get(results, :generations)

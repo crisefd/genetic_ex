@@ -7,7 +7,7 @@ defmodule Speller do
   @target "supercalifragilisticexpialidocious"
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     size = String.length(@target)
     genes = for(_ <- 1..size, do: Enum.random(@range)) |> Arrays.new()
     %Chromosome{genes: genes}

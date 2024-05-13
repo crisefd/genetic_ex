@@ -21,7 +21,7 @@ defmodule Tetris do
   @behaviour Behaviours.Problem
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     game = Agent.get(TetrisInterface, & &1)
     genes = for(_ <- 1..1000, do: Misc.random(game.legal_actions)) |> Arrays.new()
     %Chromosome{genes: genes}

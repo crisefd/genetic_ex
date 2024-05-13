@@ -9,7 +9,7 @@ defmodule Codebreaker do
   @bit_range 1..64
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     %Chromosome{
       genes: for(_ <- @bit_range, do: Enum.random(0..1)) |> Arrays.new()
     }

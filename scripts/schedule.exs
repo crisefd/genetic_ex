@@ -13,7 +13,7 @@ defmodule Schedule do
   @interests [8.0, 8.0, 5.0, 9.0, 7.0, 2.0, 8.0, 2.0, 7.0, 10.0]
 
   @impl true
-  def genotype() do
+  def genotype(_) do
     genes =
       for(_ <- 1..10, do: Misc.random(0..1))
       |> Arrays.new()
