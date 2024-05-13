@@ -32,13 +32,17 @@ defmodule Toolbox.Crossover do
 
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
-      {{l1, r1}, {l2, r2}} =
-        {misc().split(parent1.genes, cut_point), misc().split(parent2.genes, cut_point)}
+      if num_genes == 0 do
+        [parent1, parent2 | childs]
+      else
+        {{l1, r1}, {l2, r2}} =
+          {misc().split(parent1.genes, cut_point), misc().split(parent2.genes, cut_point)}
 
-      child1 = %Chromosome{genes: Arrays.concat(l1, r2)}
-      child2 = %Chromosome{genes: Arrays.concat(l2, r1)}
+        child1 = %Chromosome{genes: Arrays.concat(l1, r2)}
+        child2 = %Chromosome{genes: Arrays.concat(l2, r1)}
 
-      [child1, child2 | childs]
+        [child1, child2 | childs]
+      end
     end)
   end
 
@@ -58,25 +62,29 @@ defmodule Toolbox.Crossover do
 
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
-      left_range = 0..cut_point1
-      mid_range = (cut_point1 + 1)..cut_point2
-      right_range = (cut_point2 + 1)..(num_genes - 1)
+      if Arrays.size(parent1.genes) in 0..4 and Arrays.size(parent2.genes) in 0..4 do
+        [parent1, parent2 | childs]
+      else
+        left_range = 0..cut_point1
+        mid_range = (cut_point1 + 1)..cut_point2
+        right_range = (cut_point2 + 1)..(num_genes - 1)
 
-      {l1, m1, r1} =
-        {Arrays.slice(parent1.genes, left_range), Arrays.slice(parent1.genes, mid_range),
-         Arrays.slice(parent1.genes, right_range)}
+        {l1, m1, r1} =
+          {Arrays.slice(parent1.genes, left_range), Arrays.slice(parent1.genes, mid_range),
+           Arrays.slice(parent1.genes, right_range)}
 
-      {l2, m2, r2} =
-        {Arrays.slice(parent2.genes, left_range), Arrays.slice(parent2.genes, mid_range),
-         Arrays.slice(parent2.genes, right_range)}
+        {l2, m2, r2} =
+          {Arrays.slice(parent2.genes, left_range), Arrays.slice(parent2.genes, mid_range),
+           Arrays.slice(parent2.genes, right_range)}
 
-      genes1 = l1 |> Arrays.concat(m2) |> Arrays.concat(r1)
-      genes2 = l2 |> Arrays.concat(m1) |> Arrays.concat(r2)
+        genes1 = l1 |> Arrays.concat(m2) |> Arrays.concat(r1)
+        genes2 = l2 |> Arrays.concat(m1) |> Arrays.concat(r2)
 
-      child1 = %Chromosome{genes: genes1}
-      child2 = %Chromosome{genes: genes2}
+        child1 = %Chromosome{genes: genes1}
+        child2 = %Chromosome{genes: genes2}
 
-      [child1, child2 | childs]
+        [child1, child2 | childs]
+      end
     end)
   end
 
@@ -97,24 +105,28 @@ defmodule Toolbox.Crossover do
 
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
-      {new_genes1, new_genes2} =
-        0..(num_genes - 1)
-        |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {genes1, genes2} ->
-          coin_flip = misc().random()
+      if Arrays.size(parent1.genes) in 0..2 and Arrays.size(parent2.genes) in 0..2 do
+        [parent1, parent2 | childs]
+      else
+        {new_genes1, new_genes2} =
+          0..(num_genes - 1)
+          |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {genes1, genes2} ->
+            coin_flip = misc().random()
 
-          {gene1, gene2} =
-            if coin_flip <= rate do
-              {Arrays.get(parent2.genes, index), Arrays.get(parent1.genes, index)}
-            else
-              {Arrays.get(parent1.genes, index), Arrays.get(parent2.genes, index)}
-            end
+            {gene1, gene2} =
+              if coin_flip <= rate do
+                {Arrays.get(parent2.genes, index), Arrays.get(parent1.genes, index)}
+              else
+                {Arrays.get(parent1.genes, index), Arrays.get(parent2.genes, index)}
+              end
 
-          {Arrays.replace(genes1, index, gene1), Arrays.replace(genes2, index, gene2)}
-        end)
+            {Arrays.replace(genes1, index, gene1), Arrays.replace(genes2, index, gene2)}
+          end)
 
-      child1 = %Chromosome{genes: new_genes1}
-      child2 = %Chromosome{genes: new_genes2}
-      [child1, child2 | childs]
+        child1 = %Chromosome{genes: new_genes1}
+        child2 = %Chromosome{genes: new_genes2}
+        [child1, child2 | childs]
+      end
     end)
   end
 
@@ -136,24 +148,28 @@ defmodule Toolbox.Crossover do
 
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
-      {child1_genes, child2_genes} =
-        0..(num_genes - 1)
-        |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {child1_genes, child2_genes} ->
-          gene1 = Arrays.get(parent1.genes, index)
-          gene2 = Arrays.get(parent2.genes, index)
+      if num_genes == 0 do
+        [parent1, parent2 | childs]
+      else
+        {child1_genes, child2_genes} =
+          0..(num_genes - 1)
+          |> Enum.reduce({parent1.genes, parent2.genes}, fn index, {child1_genes, child2_genes} ->
+            gene1 = Arrays.get(parent1.genes, index)
+            gene2 = Arrays.get(parent2.genes, index)
 
-          new_gene1 = r_percentage * gene1 + s_percentage * gene2
-          new_gene2 = s_percentage * gene1 + r_percentage * gene2
+            new_gene1 = r_percentage * gene1 + s_percentage * gene2
+            new_gene2 = s_percentage * gene1 + r_percentage * gene2
 
-          {
-            Arrays.replace(child1_genes, index, new_gene1),
-            Arrays.replace(child2_genes, index, new_gene2)
-          }
-        end)
+            {
+              Arrays.replace(child1_genes, index, new_gene1),
+              Arrays.replace(child2_genes, index, new_gene2)
+            }
+          end)
 
-      child1 = %Chromosome{genes: child1_genes}
-      child2 = %Chromosome{genes: child2_genes}
-      [child1, child2 | childs]
+        child1 = %Chromosome{genes: child1_genes}
+        child2 = %Chromosome{genes: child2_genes}
+        [child1, child2 | childs]
+      end
     end)
   end
 
@@ -215,11 +231,7 @@ defmodule Toolbox.Crossover do
       end)
 
     if Arrays.size(child_genes) != num_genes do
-      IO.inspect(cut_point1, label: "Cut Point 1")
-      IO.inspect(cut_point2, label: "Cut Point 2")
-      IO.inspect(initial_child_genes, label: "Initial child genes")
-      IO.inspect(child_genes, label: "Bad child_genes")
-      System.halt(0)
+      raise "The child chromosome has a different number of genes than its parent. Expected #{num_genes} but got #{Arrays.size(child_genes)}"
     end
 
     child_genes

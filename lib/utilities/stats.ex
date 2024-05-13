@@ -54,7 +54,7 @@ defmodule Utilities.Stats do
       |> hd()
     rescue
       ArgumentError ->
-        IO.puts("No stats found for generation #{generation}")
+        IO.warn("No stats found for generation #{generation}")
         %{}
     end
   end

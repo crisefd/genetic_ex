@@ -31,7 +31,8 @@ defmodule Genetic.MixProject do
       {:libgraph, "~> 0.16.0"},
       {:arrays, "~> 2.1"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.1", only: [:test]}
+      {:mox, "~> 1.1", only: [:test]},
+      {:stream_data, "~> 0.5.0", only: [:test]}
     ]
   end
 

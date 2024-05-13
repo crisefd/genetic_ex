@@ -3,6 +3,7 @@ defmodule CrossoverTest do
   alias Toolbox.Crossover
   alias Utilities.Misc
   use ExUnit.Case
+  use ExUnitProperties
   import Mox
   doctest Crossover
 
