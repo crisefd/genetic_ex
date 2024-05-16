@@ -9,12 +9,12 @@ defmodule Behaviours.Problem do
   @type chromosome() :: Chromosome.t()
   @type population() :: list(chromosome())
   @type pair() :: {chromosome(), chromosome()}
-  @type bound() :: {number(), number()}
+  @type array() :: Arrays.t()
 
   @doc """
     Randomly creates a new chromosome to initialize the population
   """
-  @callback genotype(bounds :: list(bound())) :: chromosome()
+  @callback genotype(bounds :: {array(), array()}) :: chromosome()
 
   @doc """
     It tells you how good a solution (chromosome) is

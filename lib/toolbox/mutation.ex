@@ -7,6 +7,7 @@ defmodule Toolbox.Mutation do
 
   @type chromosome() :: Chromosome.t()
   @type range() :: Range.t()
+  @type array() :: Arrays.t()
 
   @spec misc() :: module()
   @doc """
@@ -44,38 +45,37 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: new_genes}
   end
 
-  @spec one_gene(chromosome :: chromosome(), range :: range()) :: chromosome()
+  @spec one_gene(chromosome :: chromosome(), bounds :: {array(), array()}) :: chromosome()
 
   @doc """
-    Takes a chromosome and mutates one of its genes at random
+    Takes a chromosome, the genes' bounds and mutates one of the genes at random
   """
-  def one_gene(chromosome, range) do
-    size = Arrays.size(chromosome.genes)
+  def one_gene(%Chromosome{genes: genes} = chromosome, {upper, lower} = _bounds) do
+    size = Arrays.size(genes)
     gene_index = misc().random(0..(size - 1))
-    base_gene = Arrays.get(chromosome.genes, gene_index)
+    range = lower[gene_index]..upper[gene_index]
     mutated_gene = misc().random(range)
 
-    if base_gene === mutated_gene do
-      one_gene(chromosome, range)
-    else
-      new_genes =
-        chromosome.genes
-        |> Arrays.replace(gene_index, mutated_gene)
+    new_genes =
+      genes
+      |> Arrays.replace(gene_index, mutated_gene)
 
-      %Chromosome{chromosome | genes: new_genes}
-    end
+    %Chromosome{chromosome | genes: new_genes}
   end
 
-  @spec all_genes(chromosome :: chromosome(), range :: range()) :: chromosome()
+  @spec all_genes(chromosome :: chromosome(), bounds :: {array(), array()}) :: chromosome()
 
   @doc """
-  Takes a chromosome and mutates all of its genes
+  Takes a chromosome, its bounds and mutates all of the genes
   """
-  def all_genes(chromosome, range) do
-    size = Arrays.size(chromosome.genes)
+  def all_genes(%Chromosome{genes: genes} = chromosome, {upper, lower} = _bounds) do
+    size = Arrays.size(genes)
 
     new_genes =
-      for(_ <- 1..size, do: misc().random(range))
+      for(gene_index <- 0..(size - 1)) do
+        range = lower[gene_index]..upper[gene_index]
+        misc().random(range)
+      end
       |> Arrays.new()
 
     %Chromosome{chromosome | genes: new_genes}

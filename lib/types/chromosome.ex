@@ -1,7 +1,9 @@
 defmodule Types.Chromosome do
+  alias Arrays.Implementations.MapArray
+
   @type t :: %__MODULE__{
           id: integer(),
-          genes: Arrays.t(),
+          genes: MapArray.t(),
           fitness: number(),
           age: integer()
         }

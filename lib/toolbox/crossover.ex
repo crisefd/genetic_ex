@@ -7,6 +7,7 @@ defmodule Toolbox.Crossover do
   alias Types.Chromosome
 
   @type chromosome() :: Chromosome.t()
+  @type array() :: Arrays.t()
 
   @spec misc() :: module()
   @doc """
@@ -37,6 +38,44 @@ defmodule Toolbox.Crossover do
       else
         {{l1, r1}, {l2, r2}} =
           {misc().split(parent1.genes, cut_point), misc().split(parent2.genes, cut_point)}
+
+        child1 = %Chromosome{genes: Arrays.concat(l1, r2)}
+        child2 = %Chromosome{genes: Arrays.concat(l2, r1)}
+
+        [child1, child2 | childs]
+      end
+    end)
+  end
+
+  @spec convex_one_point(parents :: list(chromosome()), bounds :: {array(), array()}) ::
+          list(chromosome())
+
+  def convex_one_point([], _), do: raise("The list of parents cannot be empty")
+
+  def convex_one_point(parents, {upper_bounds, lower_bounds}) do
+    num_genes = Arrays.size(hd(parents).genes)
+    cut_point = misc().random(0..(num_genes - 1))
+
+    parents
+    |> preprocess_parents(fn {parent1, parent2}, childs ->
+      if num_genes == 0 do
+        [parent1, parent2 | childs]
+      else
+        beta = misc().random(0..10) / 10
+
+        x1 = parent1.genes[cut_point]
+        y1 = parent2.genes[cut_point]
+        l = lower_bounds[cut_point]
+        u = upper_bounds[cut_point]
+
+        x2 = x1 + beta * (y1 - x1)
+        y2 = l + beta * (u - l)
+
+        genes1 = Arrays.replace(parent1.genes, cut_point, x2)
+        genes2 = Arrays.replace(parent2.genes, cut_point, y2)
+
+        {{l1, r1}, {l2, r2}} =
+          {misc().split(genes1, cut_point), misc().split(genes2, cut_point)}
 
         child1 = %Chromosome{genes: Arrays.concat(l1, r2)}
         child2 = %Chromosome{genes: Arrays.concat(l2, r1)}

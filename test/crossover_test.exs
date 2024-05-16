@@ -12,6 +12,30 @@ defmodule CrossoverTest do
 
   setup :verify_on_exit!
 
+  test "One-Point Convex Combination Crossover in the middle" do
+    cut_point = 2
+    expected1 = [0.3, 0.8, 1.0, -0.5, -0.3]
+    expected2 = [0.3, -0.2, 0.9000000000000001, -0.2, 0.9]
+
+    bounds = {
+      for(_ <- 0..4, do: 1.0) |> Arrays.new(),
+      for(_ <- 0..4, do: -1.0) |> Arrays.new()
+    }
+
+    MiscMock
+    |> expect(:random, fn _ -> cut_point end)
+    |> expect(:random, fn 0..10 -> 10 end)
+    |> expect(:split, &Misc.split/2)
+    |> expect(:split, &Misc.split/2)
+
+    [child1, child2] = Crossover.convex_one_point([@parent1, @parent2], bounds)
+
+    actual1 = child1.genes |> Arrays.to_list()
+    actual2 = child2.genes |> Arrays.to_list()
+    assert actual1 == expected1
+    assert actual2 == expected2
+  end
+
   test "One-Point Crossover in the middle" do
     cut_point = 2
     expected1 = [0.3, 0.8, 0.9, -0.5, -0.3]

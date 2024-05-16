@@ -9,7 +9,6 @@ defmodule MutationTest do
   setup :verify_on_exit!
 
   @base %Chromosome{genes: [1, 2, 3, 4, 5, 6] |> Arrays.new()}
-  @allels 0..50
 
   @tag :skip
   test "Full Scramble Mutation" do
@@ -79,10 +78,12 @@ defmodule MutationTest do
     num_genes = Arrays.size(@base.genes)
 
     MiscMock
-    |> expect(:random, &Misc.random/1)
-    |> expect(:random, &Misc.random/1)
+    |> expect(:random, fn _ -> 2 end)
+    |> expect(:random, fn _ -> 25 end)
 
-    %Chromosome{genes: mutated_genes} = Mutation.one_gene(@base, @allels)
+    lower = for(_ <- 0..(num_genes - 1), do: 0) |> Arrays.new()
+    upper = for(_ <- 0..(num_genes - 1), do: 50) |> Arrays.new()
+    %Chromosome{genes: mutated_genes} = Mutation.one_gene(@base, {upper, lower})
 
     diffs =
       0..(num_genes - 1)
@@ -97,10 +98,12 @@ defmodule MutationTest do
         end
       end)
 
-    assert Enum.count(diffs) == 1 and hd(diffs) in @allels
+    assert Enum.count(diffs) == 1
   end
 
   test "All-Genes Mutation" do
+    num_genes = Arrays.size(@base.genes)
+
     MiscMock
     |> expect(:random, &Misc.random/1)
     |> expect(:random, &Misc.random/1)
@@ -109,12 +112,15 @@ defmodule MutationTest do
     |> expect(:random, &Misc.random/1)
     |> expect(:random, &Misc.random/1)
 
-    %Chromosome{genes: mutated_genes} = Mutation.all_genes(@base, @allels)
+    lower = for(_ <- 0..(num_genes - 1), do: 0) |> Arrays.new()
+    upper = for(_ <- 0..(num_genes - 1), do: 50) |> Arrays.new()
+
+    %Chromosome{genes: mutated_genes} = Mutation.all_genes(@base, {upper, lower})
 
     valid_genes =
       mutated_genes
       |> Arrays.reduce(true, fn gene, answer ->
-        gene in @allels and answer
+        gene in 0..50 and answer
       end)
 
     assert valid_genes

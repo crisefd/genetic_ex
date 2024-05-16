@@ -8,7 +8,7 @@ defmodule Genetic do
     - Terminate criteria
   The user defines the particularities in their Problem modules and then call Genetic.execute with them
   """
-
+  alias Arrays.Implementations.MapArray
   alias Types.Chromosome
   alias Toolbox.Crossover
   alias Toolbox.Mutation
@@ -106,27 +106,36 @@ defmodule Genetic do
   @spec crossover(pairs :: list(pair()), opts :: keyword()) :: list(chromosome())
 
   def crossover(pairs, opts) do
+    bounds_function = Keyword.get(opts, :bounds_function)
     crossover_function = Keyword.get(opts, :crossover_function, &Crossover.one_point/1)
     parallelized_crossover? = Keyword.get(opts, :parallelized_crossover?, false)
+    chromosome_size = (pairs |> hd() |> Enum.at(0)).genes |> Arrays.size()
+    bounds = bounds_function.()
+    bounds = check_bounds(bounds, chromosome_size)
 
     if parallelized_crossover? do
-      parallel_crossover(pairs, crossover_function)
+      parallel_crossover(pairs, crossover_function, bounds)
     else
-      sequential_crossover(pairs, crossover_function)
+      sequential_crossover(pairs, crossover_function, bounds)
     end
   end
 
   @spec mutate(population :: list(chromosome()), opts :: keyword()) :: list(chromosome())
 
   def mutate(population, opts) do
+    bounds_function = Keyword.get(opts, :bounds_function)
     mutation_rate = Keyword.get(opts, :mutation_rate, @default_mutation_rate)
     mutation_function = Keyword.get(opts, :mutation_function, &Mutation.scramble/1)
     parallelized_mutate? = Keyword.get(opts, :parallelized_mutate?, false)
 
+    chromosome_size = (population |> hd()).genes |> Arrays.size()
+    bounds = bounds_function.()
+    bounds = check_bounds(bounds, chromosome_size)
+
     if parallelized_mutate? do
-      parallel_mutate(population, mutation_rate, mutation_function)
+      parallel_mutate(population, mutation_rate, mutation_function, bounds)
     else
-      sequential_mutate(population, mutation_rate, mutation_function)
+      sequential_mutate(population, mutation_rate, mutation_function, bounds)
     end
   end
 
@@ -259,11 +268,13 @@ defmodule Genetic do
     Genealogy.add_chromosomes(parent1, parent2, child)
   end
 
-  defp parallel_crossover(pairs, crossover_function) do
+  defp parallel_crossover(pairs, crossover_function, bounds) do
     pairs
     |> Misc.pmap(fn {p1, p2} ->
+      params = get_crossover_function_params(p1, p2, bounds)
+
       fn ->
-        [c1, c2] = crossover_function.([p1, p2])
+        [c1, c2] = apply(crossover_function, params)
         add_to_genealogy(p1, p2, c1)
         add_to_genealogy(p1, p2, c2)
         {c1, c2}
@@ -272,33 +283,36 @@ defmodule Genetic do
     |> Enum.flat_map(fn {c1, c2} -> [c1, c2] end)
   end
 
-  defp sequential_crossover(pairs, crossover_function) do
+  defp sequential_crossover(pairs, crossover_function, bounds) do
     pairs
     |> Enum.reduce([], fn {p1, p2}, children ->
-      [c1, c2] = crossover_function.([p1, p2])
+      params = get_crossover_function_params(p1, p2, bounds)
+      [c1, c2] = apply(crossover_function, params)
       add_to_genealogy(p1, p2, c1)
       add_to_genealogy(p1, p2, c2)
       [c1, c2 | children]
     end)
   end
 
-  defp parallel_mutate(population, mutation_rate, mutation_function) do
+  defp parallel_mutate(population, mutation_rate, mutation_function, bounds) do
     population
     |> Enum.filter(fn _ -> Misc.random() <= mutation_rate end)
     |> Misc.pmap(fn chromosome ->
       fn ->
-        mutant = mutation_function.(chromosome)
+        params = get_mutate_function_params(chromosome, bounds)
+        mutant = apply(mutation_function, params)
         add_to_genealogy(chromosome, mutant)
         mutant
       end
     end)
   end
 
-  defp sequential_mutate(population, mutation_rate, mutation_function) do
+  defp sequential_mutate(population, mutation_rate, mutation_function, bounds) do
     population
     |> Enum.reduce([], fn chromosome, mutants ->
       if Misc.random() <= mutation_rate do
-        mutant = mutation_function.(chromosome)
+        params = get_mutate_function_params(chromosome, bounds)
+        mutant = apply(mutation_function, params)
         add_to_genealogy(chromosome, mutant)
         [mutant | mutants]
       else
@@ -328,6 +342,38 @@ defmodule Genetic do
     end)
     |> Enum.sort_by(& &1.fitness, sorter)
   end
+
+  defp get_mutate_function_params(parent, nil), do: [parent]
+
+  defp get_mutate_function_params(parent, bounds) do
+    [parent, bounds]
+  end
+
+  defp get_crossover_function_params(parent1, parent2, nil), do: [parent1, parent2]
+
+  defp get_crossover_function_params(parent1, parent2, bounds), do: [parent1, parent2, bounds]
+
+  defp check_bounds(nil, _), do: nil
+
+  defp check_bounds({%MapArray{}, %MapArray{}} = bounds, chromosome_size) do
+    {upper, lower} = bounds
+    upper_size = Arrays.size(upper)
+    lower_size = Arrays.size(lower)
+
+    if upper_size == chromosome_size and lower_size == chromosome_size do
+      bounds
+    else
+      raise(
+        "The upper and lower bounds size need to match chromosome size. Expected #{chromosome_size} but got #{upper_size} and #{lower_size}"
+      )
+    end
+  end
+
+  defp check_bounds(_, _),
+    do:
+      raise(
+        "The bounds item that was passed did not pattern match {Arrays.Implementations.MapArray<[]>, Arrays.Implementations.MapArray<[]>}"
+      )
 
   defp log(best, generation, temperature, opts) do
     logging = Keyword.get(opts, :logging, true)
