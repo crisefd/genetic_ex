@@ -81,12 +81,14 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: new_genes}
   end
 
-  @spec flip(chromosome :: chromosome()) :: chromosome()
+  @spec flip(chromosome :: chromosome(), rate :: float()) :: chromosome()
 
   @doc """
     Flips the binary genes chromosome. Raises exception of non binary genes are present
   """
-  def flip(chromosome, rate \\ 1.0) do
+  def flip(chromosome, rate \\ 1.0)
+
+  def flip(chromosome, rate) do
     flipped_genes =
       chromosome.genes
       |> Arrays.map(fn gene ->
