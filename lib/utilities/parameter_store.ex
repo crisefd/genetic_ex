@@ -16,15 +16,15 @@ defmodule Utilities.ParameterStore do
           logging?: boolean(),
           cooling_rate: float(),
           survival_rate: float(),
-          bounds_function: nil | function(),
+          bounds_function: function(),
           selection_function: function(),
           crossover_function: function(),
           mutation_function: function(),
           reinsert_function: function(),
           stats_functions: keyword(),
-          parallelized_fitness_evaluation?: boolean(),
-          parallelized_crossover?: boolean(),
-          parallelized_mutate?: boolean(),
+          parallelize_fitness_evaluation?: boolean(),
+          parallelize_crossover?: boolean(),
+          parallelize_mutate?: boolean(),
           logging?: boolean()
         }
 
@@ -42,14 +42,14 @@ defmodule Utilities.ParameterStore do
             logging_step: 10,
             cooling_rate: 0.8,
             survival_rate: 0.2,
-            bounds_function: nil,
+            bounds_function: &Misc.get_nil/0,
             selection_function: &Selection.elitist/3,
             crossover_function: &Crossover.one_point/1,
             mutation_function: &Mutation.scramble/1,
             reinsert_function: &Reinsertion.elitist/6,
             stats_functions: @default_stats_functions,
-            parallelized_fitness_evaluation?: false,
-            parallelized_crossover?: false,
-            parallelized_mutate?: false,
+            parallelize_fitness_evaluation?: false,
+            parallelize_crossover?: false,
+            parallelize_mutate?: false,
             logging?: false
 end

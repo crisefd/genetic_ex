@@ -10,33 +10,16 @@ defmodule Genetic do
   """
   alias Arrays.Implementations.MapArray
   alias Types.Chromosome
-  alias Toolbox.Crossover
-  alias Toolbox.Mutation
-  alias Toolbox.Reinsertion
-  alias Toolbox.Selection
   alias Utilities.Stats
   alias Utilities.Misc
   alias Utilities.Genealogy
+  alias Utilities.ParameterStore, as: Options
 
   @type chromosome() :: Chromosome.t()
   @type pair() :: {chromosome(), chromosome()}
+  @type options() :: Options.t()
 
-  @default_population_size 100
-  @default_mutation_rate 0.05
-  @default_selection_rate 0.8
-  @default_optimization :max
-  @default_logging_step 10
-  @default_cooling_rate 0.8
-  @default_survival_rate 0.2
-
-  @default_stats_functions [
-    min_fitness: &Misc.min_fitness/1,
-    max_fitness: &Misc.max_fitness/1,
-    mean_fitness: &Misc.mean_fitness/1,
-    population_size: &Misc.count_chromosomes/1
-  ]
-
-  @spec execute(problem :: module(), opts :: keyword()) :: keyword()
+  @spec execute(problem :: module(), opts :: options()) :: keyword()
 
   @doc """
     Main function of a GA.
@@ -47,16 +30,18 @@ defmodule Genetic do
         best_fitness: The fitness of the best chromosome
     ]
   """
-  def execute(problem, opts \\ []) do
+  def execute(problem, opts \\ %Options{})
+
+  def execute(problem, opts) do
     initialize_population(&problem.genotype/1, opts)
     |> evolve(problem, 0, 0, 0.0, opts)
   end
 
-  @spec initialize_population(genotype :: function(), opts :: keyword()) :: list(chromosome())
+  @spec initialize_population(genotype :: function(), opts :: options()) :: list(chromosome())
 
   def initialize_population(genotype, opts) do
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
-    bounds_function = Keyword.get(opts, :bounds_function, nil)
+    population_size = opts.population_size
+    bounds_function = opts.bounds_function
     population = for _ <- 1..population_size, do: genotype.(bounds_function)
 
     add_to_genealogy(population)
@@ -64,13 +49,13 @@ defmodule Genetic do
     population
   end
 
-  @spec select(list(chromosome()), list()) ::
+  @spec select(population :: list(chromosome()), opts :: options()) ::
           {list(pair()), list(chromosome()), list(chromosome())}
 
   def select(population, opts) do
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
-    selection_rate = Keyword.get(opts, :selection_rate, @default_selection_rate)
-    selection_function = Keyword.get(opts, :selection_function, &Selection.elitist/3)
+    population_size = opts.population_size
+    selection_rate = opts.selection_rate
+    selection_function = opts.selection_function
     parents = selection_function.(population, population_size, selection_rate)
 
     parent_pairs = pair_parents_up(parents)
@@ -87,52 +72,53 @@ defmodule Genetic do
   @spec evaluate(
           population :: list(chromosome()),
           fitness_function :: function(),
-          opts :: keyword()
+          opts :: options()
         ) ::
           list(chromosome())
 
   def evaluate(population, fitness_function, opts) do
-    optimization = Keyword.get(opts, :optimization, @default_optimization)
-    parallelized_fitness_evaluation? = Keyword.get(opts, :parallelized_fitness_evaluation?, false)
-    sorter = if optimization == :max, do: :desc, else: :asc
+    optimization_type = opts.optimization_type
+    parallelize_fitness_evaluation? = opts.parallelize_fitness_evaluation?
+    sorter = if optimization_type == :max, do: :desc, else: :asc
 
-    if parallelized_fitness_evaluation? do
+    if parallelize_fitness_evaluation? do
       parallel_evaluate(population, fitness_function, sorter)
     else
       sequential_evaluate(population, fitness_function, sorter)
     end
   end
 
-  @spec crossover(pairs :: list(pair()), opts :: keyword()) :: list(chromosome())
+  @spec crossover(pairs :: list(pair()), opts :: options()) :: list(chromosome())
 
-  def crossover(pairs, opts) do
-    bounds_function = Keyword.get(opts, :bounds_function)
-    crossover_function = Keyword.get(opts, :crossover_function, &Crossover.one_point/1)
-    parallelized_crossover? = Keyword.get(opts, :parallelized_crossover?, false)
-    chromosome_size = (pairs |> hd() |> Enum.at(0)).genes |> Arrays.size()
+  def crossover([first_pair | _] = pairs, opts) do
+    bounds_function = opts.bounds_function
+    crossover_function = opts.crossover_function
+    parallelize_crossover? = opts.parallelize_crossover?
+    {chromosome, _} = first_pair
+    num_genes = Arrays.size(chromosome.genes)
     bounds = bounds_function.()
-    bounds = check_bounds(bounds, chromosome_size)
+    bounds = check_bounds(bounds, num_genes)
 
-    if parallelized_crossover? do
+    if parallelize_crossover? do
       parallel_crossover(pairs, crossover_function, bounds)
     else
       sequential_crossover(pairs, crossover_function, bounds)
     end
   end
 
-  @spec mutate(population :: list(chromosome()), opts :: keyword()) :: list(chromosome())
+  @spec mutate(population :: list(chromosome()), opts :: options()) :: list(chromosome())
 
   def mutate(population, opts) do
-    bounds_function = Keyword.get(opts, :bounds_function)
-    mutation_rate = Keyword.get(opts, :mutation_rate, @default_mutation_rate)
-    mutation_function = Keyword.get(opts, :mutation_function, &Mutation.scramble/1)
-    parallelized_mutate? = Keyword.get(opts, :parallelized_mutate?, false)
+    bounds_function = opts.bounds_function
+    mutation_rate = opts.mutation_rate
+    mutation_function = opts.mutation_function
+    parallelize_mutate? = opts.parallelize_mutate?
 
     chromosome_size = (population |> hd()).genes |> Arrays.size()
     bounds = bounds_function.()
     bounds = check_bounds(bounds, chromosome_size)
 
-    if parallelized_mutate? do
+    if parallelize_mutate? do
       parallel_mutate(population, mutation_rate, mutation_function, bounds)
     else
       sequential_mutate(population, mutation_rate, mutation_function, bounds)
@@ -143,14 +129,14 @@ defmodule Genetic do
           parents :: list(chromosome()),
           offspring :: list(chromosome()),
           leftover :: list(chromosome()),
-          opts :: keyword()
+          opts :: options()
         ) :: list(chromosome())
 
   def reinsert(parents, offspring, leftover, opts) do
-    survival_rate = Keyword.get(opts, :survival_rate, @default_survival_rate)
-    optimization = Keyword.get(opts, :optimization, @default_optimization)
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
-    reinsert_function = Keyword.get(opts, :reinsert_function, &Reinsertion.elitist/6)
+    survival_rate = opts.survival_rate
+    optimization = opts.optimization_type
+    population_size = opts.population_size
+    reinsert_function = opts.reinsert_function
 
     new_population =
       apply(reinsert_function, [
@@ -179,7 +165,7 @@ defmodule Genetic do
           generation :: integer(),
           last_optimal_fitness :: number(),
           temperature :: float(),
-          opts :: keyword()
+          opts :: options()
         ) :: keyword()
 
   @doc """
@@ -187,8 +173,8 @@ defmodule Genetic do
     in a loop and returns the result when Termination criteria has been met
   """
   def evolve(population, problem, generation, last_optimal_fitness, temperature, opts) do
-    cooling_rate = Keyword.get(opts, :cooling_rate, @default_cooling_rate)
-    population_size = Keyword.get(opts, :population_size, @default_population_size)
+    cooling_rate = opts.cooling_rate
+    population_size = opts.population_size
 
     evaluated_population =
       population
@@ -232,7 +218,7 @@ defmodule Genetic do
   end
 
   defp record_stats(population, generation, opts) do
-    stats_functions = Keyword.get(opts, :stats_functions, @default_stats_functions)
+    stats_functions = opts.stats_functions
 
     data = [
       population: population,
@@ -264,7 +250,7 @@ defmodule Genetic do
     Genealogy.add_chromosomes(parent, child)
   end
 
-  def add_to_genealogy(parent1, parent2, child) do
+  defp add_to_genealogy(parent1, parent2, child) do
     Genealogy.add_chromosomes(parent1, parent2, child)
   end
 
@@ -349,9 +335,9 @@ defmodule Genetic do
     [parent, bounds]
   end
 
-  defp get_crossover_function_params(parent1, parent2, nil), do: [parent1, parent2]
+  defp get_crossover_function_params(parent1, parent2, nil), do: [[parent1, parent2]]
 
-  defp get_crossover_function_params(parent1, parent2, bounds), do: [parent1, parent2, bounds]
+  defp get_crossover_function_params(parent1, parent2, bounds), do: [[parent1, parent2], bounds]
 
   defp check_bounds(nil, _), do: nil
 
@@ -376,8 +362,8 @@ defmodule Genetic do
       )
 
   defp log(best, generation, temperature, opts) do
-    logging = Keyword.get(opts, :logging, true)
-    step = Keyword.get(opts, :logging_step, @default_logging_step)
+    logging = opts.logging?
+    step = opts.logging_step
 
     if logging && rem(generation, step) == 0 do
       IO.inspect(generation, label: "Generation")

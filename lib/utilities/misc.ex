@@ -89,4 +89,8 @@ defmodule Utilities.Misc do
       get_cut_points(num_genes)
     end
   end
+
+  def get_nil() do
+    nil
+  end
 end
