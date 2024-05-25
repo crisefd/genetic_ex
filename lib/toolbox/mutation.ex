@@ -15,14 +15,15 @@ defmodule Toolbox.Mutation do
   """
   def misc, do: Application.get_env(:genetic, :misc)
 
-  @spec scramble(chromosome :: chromosome(), partial :: boolean()) :: chromosome()
+  @spec scramble(chromosome :: chromosome(), bounds :: {array(), array()}, partial :: boolean()) ::
+          chromosome()
 
   @doc """
     Scrambles the list of genes of a chromosome
   """
-  def scramble(chromosome, partial \\ false)
+  def scramble(chromosome, bounds, partial \\ false)
 
-  def scramble(%Chromosome{genes: genes} = chromosome, partial) do
+  def scramble(%Chromosome{genes: genes} = chromosome, _bounds, partial) do
     new_genes =
       if partial do
         num_genes = Arrays.size(genes)

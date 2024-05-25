@@ -41,8 +41,9 @@ defmodule Genetic do
 
   def initialize_population(genotype, opts) do
     population_size = opts.population_size
-    bounds_function = opts.bounds_function
-    population = for _ <- 1..population_size, do: genotype.(bounds_function)
+    chromosome_size = opts.chromosome_size
+    bounds = check_bounds(opts.bounds_function.(), chromosome_size)
+    population = for _ <- 1..population_size, do: genotype.(bounds)
 
     add_to_genealogy(population)
 

@@ -44,10 +44,5 @@ defmodule Codebreaker do
   end
 end
 
-Genetic.execute(Codebreaker,
-  mutation_rate: 0.05,
-  selection_rate: 0.8,
-  logging: true,
-  population_size: 1000
-)
+Genetic.execute(Codebreaker)
 |> IO.inspect()

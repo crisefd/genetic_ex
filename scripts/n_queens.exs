@@ -35,5 +35,5 @@ defmodule NQueens do
   end
 end
 
-Genetic.execute(NQueens, selection_rate: 0.8, mutation_rate: 0.05, population_size: 20)
+Genetic.execute(NQueens)
 |> IO.inspect()

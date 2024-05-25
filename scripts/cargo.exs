@@ -33,4 +33,4 @@ defmodule Cargo do
   end
 end
 
-Genetic.execute(Cargo, selection_rate: 0.8, mutation_rate: 0.1) |> IO.inspect()
+Genetic.execute(Cargo) |> IO.inspect()

@@ -9,6 +9,7 @@ defmodule Utilities.ParameterStore do
 
   @type t :: %__MODULE__{
           population_size: integer(),
+          chromosome_size: integer(),
           mutation_rate: float(),
           selection_rate: float(),
           optimization_type: optimization_type(),
@@ -36,6 +37,7 @@ defmodule Utilities.ParameterStore do
   ]
 
   defstruct population_size: 100,
+            chromosome_size: 0,
             mutation_rate: 0.05,
             selection_rate: 0.8,
             optimization_type: :max,
@@ -44,8 +46,8 @@ defmodule Utilities.ParameterStore do
             survival_rate: 0.2,
             bounds_function: &Misc.get_nil/0,
             selection_function: &Selection.elitist/3,
-            crossover_function: &Crossover.one_point/1,
-            mutation_function: &Mutation.scramble/1,
+            crossover_function: &Crossover.one_point/2,
+            mutation_function: &Mutation.scramble/2,
             reinsert_function: &Reinsertion.elitist/6,
             stats_functions: @default_stats_functions,
             parallelize_fitness_evaluation?: false,

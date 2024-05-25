@@ -50,4 +50,5 @@ end
 
 TetrisInterface.start_link("priv/tetris.bin")
 
-Genetic.execute(Tetris, population_size: 10, logging: false) |> IO.inspect(label: "Result")
+Genetic.execute(Tetris, %Utilities.ParameterStore{population_size: 10, logging: false})
+|> IO.inspect(label: "Result")

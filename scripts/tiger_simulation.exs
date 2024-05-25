@@ -53,11 +53,14 @@ defmodule TigerSimulation do
 end
 
 # result =
-Genetic.execute(TigerSimulation,
-  population_size: 20,
-  selection_rate: 0.9,
-  mutation_rate: 0.1,
-  logging: false
+Genetic.execute(
+  TigerSimulation,
+  %Utilities.ParameterStore{
+    population_size: 20,
+    selection_rate: 0.9,
+    mutation_rate: 0.1,
+    logging?: false
+  }
   # stats_functions: [average_tiger: &TigerSimulation.average_tiger/1]
 )
 |> IO.inspect()

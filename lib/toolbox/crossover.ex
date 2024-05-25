@@ -15,19 +15,23 @@ defmodule Toolbox.Crossover do
   """
   def misc, do: Application.get_env(:genetic, :misc)
 
-  @spec one_point(parents :: list(chromosome()), cut_point :: integer()) ::
+  @spec one_point(
+          parents :: list(chromosome()),
+          bounds :: {array(), array()},
+          cut_point :: integer()
+        ) ::
           list(chromosome())
 
-  def one_point(parents, cut_point \\ -1)
+  def one_point(parents, bounds, cut_point \\ -1)
 
-  def one_point([], _), do: raise("The list of parents cannot be empty")
+  def one_point([], _, _), do: raise("The list of parents cannot be empty")
 
-  def one_point([_parent | []] = parents, _), do: parents
+  def one_point([_parent | []] = parents, _, _), do: parents
 
   @doc """
     Takes two chromosomes, applies One-Point crossover and returns a tuple containing the two resulting offspring
   """
-  def one_point(parents, cut_point) do
+  def one_point(parents, _bounds, cut_point) do
     num_genes = Arrays.size(hd(parents).genes)
     cut_point = if cut_point < 0, do: misc().random(0..(num_genes - 1)), else: cut_point
 
