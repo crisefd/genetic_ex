@@ -135,7 +135,7 @@ defmodule Toolbox.Crossover do
           list(chromosome())
 
   @doc """
-    Takes two chromosomes, applies Scattered (uniform) crossover and returns a tuple containing the two resulting offspring
+    Takes two chromosomes, applies Scattered (uniform) crossover and returns a list containing the resulting offspring
   """
   def scattered(parents, rate \\ 0.5)
 

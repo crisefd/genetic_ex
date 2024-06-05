@@ -9,7 +9,8 @@ defmodule Genetic.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: Mix.compilers() ++ [:yecc, :leex]
+      compilers: Mix.compilers() ++ [:yecc, :leex],
+      aliases: aliases()
     ]
   end
 
@@ -32,11 +33,25 @@ defmodule Genetic.MixProject do
       {:arrays, "~> 2.1"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.1", only: [:test]},
-      {:stream_data, "~> 0.5.0", only: [:test]}
+      {:stream_data, "~> 0.5.0", only: [:property_test]}
     ]
+  end
+
+  def cli do
+    [preferred_envs: ["test.property": :property_test, "test.unit": :test]]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
 
   defp elixirc_paths(_), do: ["lib"]
+
+  defp aliases() do
+    [
+      "test.property": [
+        fn _ -> System.put_env("MIX_ENV", "property_test") end,
+        "test test/property"
+      ],
+      "test.unit": ["test test/unit"]
+    ]
+  end
 end

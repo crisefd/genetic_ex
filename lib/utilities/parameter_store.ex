@@ -10,6 +10,7 @@ defmodule Utilities.ParameterStore do
   @type t :: %__MODULE__{
           population_size: integer(),
           chromosome_size: integer(),
+          discrete: boolean(),
           mutation_rate: float(),
           selection_rate: float(),
           optimization_type: optimization_type(),
@@ -38,6 +39,7 @@ defmodule Utilities.ParameterStore do
 
   defstruct population_size: 100,
             chromosome_size: 0,
+            discrete: false,
             mutation_rate: 0.05,
             selection_rate: 0.8,
             optimization_type: :max,

@@ -3,7 +3,6 @@ defmodule CrossoverTest do
   alias Toolbox.Crossover
   alias Utilities.Misc
   use ExUnit.Case
-  use ExUnitProperties
   import Mox
   doctest Crossover
 
@@ -46,7 +45,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    [child1, child2] = Crossover.one_point([@parent1, @parent2])
+    [child1, child2] = Crossover.one_point([@parent1, @parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -64,7 +63,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    [child1, child2] = Crossover.one_point([@parent1, @parent2])
+    [child1, child2] = Crossover.one_point([@parent1, @parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -82,7 +81,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    [child1, child2] = Crossover.one_point([@parent1, @parent2])
+    [child1, child2] = Crossover.one_point([@parent1, @parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -136,6 +135,30 @@ defmodule CrossoverTest do
     |> expect(:random, fn -> 0.0 end)
 
     [child1, child2] = Crossover.scattered([@parent1, @parent2])
+
+    actual1 = child1.genes |> Arrays.to_list()
+    actual2 = child2.genes |> Arrays.to_list()
+    assert actual1 == expected1
+    assert actual2 == expected2
+  end
+
+  test "Scattered Crossover 2" do
+    parent1 = %Chromosome{genes: [0.5, -1.5, -2.0, 1.0, 2.5, -2.0, 0.5] |> Arrays.new()}
+    parent2 = %Chromosome{genes: [-3.0, 1.0, 1.0, -3.0, 1.0, -3.0, -1.0] |> Arrays.new()}
+
+    expected1 = [-3.0, -1.5, 1.0, 1.0, 1.0, -2.0, -1.0]
+    expected2 = [0.5, 1.0, -2.0, -3.0, 2.5, -3.0, 0.5]
+
+    MiscMock
+    |> expect(:random, fn -> 0.0 end)
+    |> expect(:random, fn -> 1.0 end)
+    |> expect(:random, fn -> 0.0 end)
+    |> expect(:random, fn -> 1.0 end)
+    |> expect(:random, fn -> 0.0 end)
+    |> expect(:random, fn -> 1.0 end)
+    |> expect(:random, fn -> 0.0 end)
+
+    [child1, child2] = Crossover.scattered([parent1, parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
