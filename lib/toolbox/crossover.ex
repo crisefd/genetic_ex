@@ -89,25 +89,25 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  @spec two_point(parents :: list(chromosome())) ::
+  @spec two_point(parents :: list(chromosome()), bounds :: {array(), array()}) ::
           list(chromosome())
 
-  def two_point([]), do: raise("The list of parents cannot be empty")
+  def two_point([], _), do: raise("The list of parents cannot be empty")
 
-  def two_point([_parent | []] = parents), do: parents
+  def two_point([_parent | []] = parents, _), do: parents
 
   @doc """
     Takes two chromosomes, applies Two-Point crossover and returns a tuple containing the two resulting offspring
   """
-  def two_point(parents) do
+  def two_point(parents, _bounds) do
     num_genes = Arrays.size(hd(parents).genes)
-    {cut_point1, cut_point2} = misc().get_cut_points(num_genes)
 
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
-      if Arrays.size(parent1.genes) in 0..4 and Arrays.size(parent2.genes) in 0..4 do
+      if num_genes in 0..4 do
         [parent1, parent2 | childs]
       else
+        {cut_point1, cut_point2} = misc().get_cut_points(num_genes)
         left_range = 0..cut_point1
         mid_range = (cut_point1 + 1)..cut_point2
         right_range = (cut_point2 + 1)..(num_genes - 1)
@@ -131,19 +131,19 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  @spec scattered(parents :: list(chromosome()), rate :: float()) ::
+  @spec scattered(parents :: list(chromosome()), bounds :: {array(), array()}, rate :: float()) ::
           list(chromosome())
 
   @doc """
     Takes two chromosomes, applies Scattered (uniform) crossover and returns a list containing the resulting offspring
   """
-  def scattered(parents, rate \\ 0.5)
+  def scattered(parents, bounds, rate \\ 0.5)
 
-  def scattered([], _), do: raise("The list of parents cannot be empty")
+  def scattered([], _, _), do: raise("The list of parents cannot be empty")
 
-  def scattered([_parent | []] = parents, _), do: parents
+  def scattered([_parent | []] = parents, _, _), do: parents
 
-  def scattered(parents, rate) do
+  def scattered(parents, _bounds, rate) do
     num_genes = Arrays.size(hd(parents).genes)
 
     parents
@@ -173,18 +173,22 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  @spec arithmetic(parents :: list(chromosome()), percentage :: float()) ::
+  @spec arithmetic(
+          parents :: list(chromosome()),
+          bounds :: {array(), array()},
+          percentage :: float()
+        ) ::
           list(chromosome())
   @doc """
      Takes two chromosomes, applies Arithemtic crossover and returns a tuple containing the two resulting offspring
   """
-  def arithmetic(parents, percentage \\ 0.0)
+  def arithmetic(parents, bounds, percentage \\ 0.0)
 
-  def arithmetic([], _), do: raise("The list of parents cannot be empty")
+  def arithmetic([], _, _), do: raise("The list of parents cannot be empty")
 
-  def arithmetic([_parent | []] = parents, _), do: parents
+  def arithmetic([_parent | []] = parents, _, _), do: parents
 
-  def arithmetic(parents, percentage) do
+  def arithmetic(parents, _bounds, percentage) do
     r_percentage = if percentage == 0.0, do: misc().random(), else: percentage
     s_percentage = 1.0 - r_percentage
     num_genes = Arrays.size(hd(parents).genes)
@@ -216,23 +220,25 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  @spec order_one(parents :: list(chromosome())) :: list(chromosome())
+  @spec order_one(parents :: list(chromosome()), bounds :: {array(), array()}) ::
+          list(chromosome())
 
-  def order_one([]), do: raise("The list of parents cannot be empty")
+  def order_one([], _), do: raise("The list of parents cannot be empty")
 
-  def order_one([_parent | []] = parents), do: parents
+  def order_one([_parent | []] = parents, _), do: parents
 
   @doc """
     Performs Order One Crossover
   """
-  def order_one(parents) do
+  def order_one(parents, _bounds) do
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
       genes1 = parent1.genes
       genes2 = parent2.genes
 
-      child1_genes = get_order_one_child(genes1, genes2)
-      child2_genes = get_order_one_child(genes2, genes1)
+      num_genes = Arrays.size(genes1)
+      child1_genes = get_order_one_child(genes1, genes2, num_genes)
+      child2_genes = get_order_one_child(genes2, genes1, num_genes)
 
       child1 = %Chromosome{genes: child1_genes}
       child2 = %Chromosome{genes: child2_genes}
@@ -240,8 +246,11 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  defp get_order_one_child(genes1, genes2) do
-    num_genes = Arrays.size(genes1)
+  defp get_order_one_child(_, _, 0), do: raise("The list of genes cannot be empty")
+
+  defp get_order_one_child(genes1, _, num_genes) when num_genes <= 4, do: genes1
+
+  defp get_order_one_child(genes1, genes2, num_genes) do
     {cut_point1, cut_point2} = misc().get_cut_points(num_genes)
     range = cut_point1..cut_point2
     sliced_genes1 = Arrays.slice(genes1, range)
@@ -257,25 +266,26 @@ defmodule Toolbox.Crossover do
     middle = sliced_genes1
     back = for(_ <- (cut_point2 + 1)..(num_genes - 1), do: nil) |> Arrays.new()
 
-    initial_child_genes = front |> Arrays.concat(middle) |> Arrays.concat(back)
+    initial_child_genes =
+      front
+      |> Arrays.concat(middle)
+      |> Arrays.concat(back)
 
     {_, child_genes} =
       0..(num_genes - 1)
       |> Enum.reduce({left_over, Arrays.new()}, fn i, {lo, result} ->
-        if Enum.empty?(lo) do
-          {lo, result}
-        else
-          if is_nil(initial_child_genes[i]) do
-            {tl(lo), Arrays.append(result, hd(lo))}
-          else
+        cond do
+          Enum.empty?(lo) or !is_nil(initial_child_genes[i]) ->
             {lo, Arrays.append(result, genes1[i])}
-          end
+
+          true ->
+            {tl(lo), Arrays.append(result, hd(lo))}
         end
       end)
 
-    if Arrays.size(child_genes) != num_genes do
-      raise "The child chromosome has a different number of genes than its parent. Expected #{num_genes} but got #{Arrays.size(child_genes)}"
-    end
+    # if Arrays.size(child_genes) != num_genes do
+    #   raise "The child chromosome has a different number of genes than its parent. Expected #{num_genes} but got #{Arrays.size(child_genes)}"
+    # end
 
     child_genes
   end

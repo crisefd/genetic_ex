@@ -51,7 +51,10 @@ defmodule Genetic.MixProject do
         fn _ -> System.put_env("MIX_ENV", "property_test") end,
         "test test/property"
       ],
-      "test.unit": ["test test/unit"]
+      "test.unit": [
+        fn _ -> System.put_env("MIX_ENV", "test") end,
+        "test test/unit"
+      ]
     ]
   end
 end

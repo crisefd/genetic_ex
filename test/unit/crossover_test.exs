@@ -98,7 +98,7 @@ defmodule CrossoverTest do
     MiscMock
     |> expect(:get_cut_points, fn _ -> {cut_point1, cut_point2} end)
 
-    [child1, child2] = Crossover.two_point([@parent1, @parent2])
+    [child1, child2] = Crossover.two_point([@parent1, @parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -115,7 +115,7 @@ defmodule CrossoverTest do
     MiscMock
     |> expect(:get_cut_points, fn _ -> {cut_point1, cut_point2} end)
 
-    [child1, child2] = Crossover.two_point([@parent1, @parent2])
+    [child1, child2] = Crossover.two_point([@parent1, @parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -134,7 +134,7 @@ defmodule CrossoverTest do
     |> expect(:random, fn -> 1.0 end)
     |> expect(:random, fn -> 0.0 end)
 
-    [child1, child2] = Crossover.scattered([@parent1, @parent2])
+    [child1, child2] = Crossover.scattered([@parent1, @parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -158,7 +158,7 @@ defmodule CrossoverTest do
     |> expect(:random, fn -> 1.0 end)
     |> expect(:random, fn -> 0.0 end)
 
-    [child1, child2] = Crossover.scattered([parent1, parent2])
+    [child1, child2] = Crossover.scattered([parent1, parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -175,7 +175,7 @@ defmodule CrossoverTest do
     MiscMock
     |> expect(:random, fn -> percentage end)
 
-    [child1, child2] = Crossover.arithmetic([@parent1, @parent2])
+    [child1, child2] = Crossover.arithmetic([@parent1, @parent2], nil)
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
 
@@ -210,7 +210,7 @@ defmodule CrossoverTest do
     # |> expect(:random, fn _ -> 1 end)
     # |> expect(:random, fn _ -> 2 end)
 
-    [child1, child2] = Crossover.order_one([parent1, parent2])
+    [child1, child2] = Crossover.order_one([parent1, parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
