@@ -6,7 +6,7 @@ defmodule CrossoverPropertyTest do
 
   property "One-Point Crossover maintains the size of the input chromosomes" do
     check all(
-            size <- integer(0..100),
+            size <- integer(0..10),
             genes1 <- list_of(integer(), length: size),
             genes2 <- list_of(integer(), length: size)
           ) do

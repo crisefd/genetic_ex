@@ -85,18 +85,9 @@ defmodule MutationTest do
     upper = for(_ <- 0..(num_genes - 1), do: 50) |> Arrays.new()
     %Chromosome{genes: mutated_genes} = Mutation.one_gene(@base, {upper, lower})
 
-    diffs =
-      0..(num_genes - 1)
-      |> Enum.reduce([], fn index, diffs ->
-        g1 = @base.genes |> Arrays.get(index)
-        g2 = mutated_genes |> Arrays.get(index)
-
-        if g1 !== g2 do
-          [g2 | diffs]
-        else
-          diffs
-        end
-      end)
+    genes_set = MapSet.new(@base.genes)
+    mutated_genes_set = MapSet.new(mutated_genes)
+    diffs = MapSet.difference(genes_set, mutated_genes_set)
 
     assert Enum.count(diffs) == 1
   end

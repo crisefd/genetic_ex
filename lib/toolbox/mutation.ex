@@ -53,6 +53,11 @@ defmodule Toolbox.Mutation do
   """
   def one_gene(%Chromosome{genes: genes} = chromosome, {upper, lower} = _bounds) do
     size = Arrays.size(genes)
+
+    if size == 0 do
+      raise("The list of genes cannot be empty")
+    end
+
     gene_index = misc().random(0..(size - 1))
     range = lower[gene_index]..upper[gene_index]
     mutated_gene = misc().random(range)
