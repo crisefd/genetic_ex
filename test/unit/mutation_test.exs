@@ -130,7 +130,7 @@ defmodule MutationTest do
     |> expect(:random, fn -> 0.1 end)
     |> expect(:random, fn -> 0.2 end)
 
-    %Chromosome{genes: mutated_genes} = Mutation.flip(binary_base)
+    %Chromosome{genes: mutated_genes} = Mutation.flip(binary_base, nil)
     actual_genes = Arrays.to_list(mutated_genes)
     assert expected_genes == actual_genes
   end
@@ -147,7 +147,7 @@ defmodule MutationTest do
     |> expect(:random, fn -> 0.8 end)
     |> expect(:random, fn -> 1.0 end)
 
-    %Chromosome{genes: mutated_genes} = Mutation.flip(binary_base, 0.5)
+    %Chromosome{genes: mutated_genes} = Mutation.flip(binary_base, nil, 0.5)
     actual_genes = Arrays.to_list(mutated_genes)
     assert expected_genes == actual_genes
   end
@@ -159,7 +159,7 @@ defmodule MutationTest do
     |> expect(:random, fn -> 0.5 end)
 
     assert_raise RuntimeError, fn ->
-      %Chromosome{genes: _mutated_genes} = Mutation.flip(binary_base)
+      %Chromosome{genes: _mutated_genes} = Mutation.flip(binary_base, nil)
     end
   end
 
@@ -182,7 +182,7 @@ defmodule MutationTest do
     |> expect(:random, fn ^mean, ^variance -> 5.9 end)
     |> expect(:random, fn ^mean, ^variance -> 6.0 end)
 
-    %Chromosome{genes: mutated_genes} = Mutation.gaussian(@base)
+    %Chromosome{genes: mutated_genes} = Mutation.gaussian(@base, nil)
 
     expected_genes = [1.5, 2.6, 3.7, 4.8, 5.9, 6.0] |> Arrays.new()
 
@@ -194,7 +194,7 @@ defmodule MutationTest do
     |> expect(:random, fn _ -> 0 end)
     |> expect(:random, fn _ -> 5 end)
 
-    %Chromosome{genes: mutated_genes} = Mutation.swap(@base)
+    %Chromosome{genes: mutated_genes} = Mutation.swap(@base, nil)
 
     expected_genes = [6, 2, 3, 4, 5, 1] |> Arrays.new()
 
@@ -204,9 +204,9 @@ defmodule MutationTest do
   test "Invert Mutation" do
     %Chromosome{genes: base_genes} = @base
 
-    %Chromosome{genes: mutated_genes} = Mutation.invert(@base)
+    %Chromosome{genes: mutated_genes} = Mutation.invert(@base, nil)
 
-    expected_genes = base_genes |> Enum.reverse()
+    expected_genes = base_genes |> Enum.reverse() |> Arrays.new()
 
     assert expected_genes == mutated_genes
   end

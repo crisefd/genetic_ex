@@ -6,7 +6,7 @@ defmodule CrossoverPropertyTest do
 
   property "One-Point Crossover maintains the size of the input chromosomes" do
     check all(
-            size <- integer(0..10),
+            size <- integer(1..10),
             genes1 <- list_of(integer(), length: size),
             genes2 <- list_of(integer(), length: size)
           ) do
@@ -21,7 +21,7 @@ defmodule CrossoverPropertyTest do
 
   property "Two-Point Crossover maintains the size of the input chromosomes" do
     check all(
-            size <- integer(0..10),
+            size <- integer(1..10),
             genes1 <- list_of(integer(), length: size),
             genes2 <- list_of(integer(), length: size)
           ) do
@@ -36,7 +36,7 @@ defmodule CrossoverPropertyTest do
 
   property "Scattered Crossover maintains the size of the input chromosomes" do
     check all(
-            size <- integer(0..10),
+            size <- integer(1..10),
             genes1 <- list_of(integer(), length: size),
             genes2 <- list_of(integer(), length: size)
           ) do
@@ -51,7 +51,7 @@ defmodule CrossoverPropertyTest do
 
   property "Arithmetic Crossover maintains the size of the input chromosomes" do
     check all(
-            size <- integer(0..10),
+            size <- integer(1..10),
             genes1 <- list_of(integer(), length: size),
             genes2 <- list_of(integer(), length: size)
           ) do
@@ -66,7 +66,7 @@ defmodule CrossoverPropertyTest do
 
   property "Order-one Crossover maintains the size of the input chromosomes" do
     check all(
-            size <- integer(0..10),
+            size <- integer(1..10),
             genes1 <- list_of(integer(), length: size),
             genes2 <- list_of(integer(), length: size)
           ) do

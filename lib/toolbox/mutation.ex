@@ -87,14 +87,15 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: new_genes}
   end
 
-  @spec flip(chromosome :: chromosome(), rate :: float()) :: chromosome()
+  @spec flip(chromosome :: chromosome(), bounds :: {array(), array()}, rate :: float()) ::
+          chromosome()
 
   @doc """
     Flips the binary genes chromosome. Raises exception of non binary genes are present
   """
-  def flip(chromosome, rate \\ 1.0)
+  def flip(chromosome, bounds, rate \\ 1.0)
 
-  def flip(chromosome, rate) do
+  def flip(chromosome, _bounds, rate) do
     flipped_genes =
       chromosome.genes
       |> Arrays.map(fn gene ->
@@ -106,10 +107,12 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: flipped_genes}
   end
 
+  @spec gaussian(chromosome(), {array(), array()}) :: chromosome()
+
   @doc """
     Performs gaussian mutation.
   """
-  def gaussian(%Chromosome{genes: genes} = chromosome) do
+  def gaussian(%Chromosome{genes: genes} = chromosome, _bounds) do
     total_size = Arrays.size(genes)
     mean = Enum.sum(genes) / total_size
 
@@ -126,10 +129,12 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: mutated_genes}
   end
 
+  @spec swap(chromosome(), {array(), array()}) :: chromosome()
+
   @doc """
     Performs swap mutation
   """
-  def swap(%Chromosome{genes: genes} = chromosome) do
+  def swap(%Chromosome{genes: genes} = chromosome, _bounds) do
     num_genes = Arrays.size(genes)
 
     if num_genes < 2 do
@@ -150,13 +155,17 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: mutated_genes}
   end
 
+  @spec invert(chromosome(), {array(), array()}) :: chromosome()
+
   @doc """
     Performs invert mutation
   """
-  def invert(%Chromosome{genes: genes} = chromosome) do
+  def invert(%Chromosome{genes: genes} = chromosome, _bounds) do
     mutated_genes =
       genes
-      |> Enum.reverse()
+      |> Arrays.reduce_right(Arrays.new(), fn result, gene ->
+        Arrays.append(result, gene)
+      end)
 
     %Chromosome{chromosome | genes: mutated_genes}
   end

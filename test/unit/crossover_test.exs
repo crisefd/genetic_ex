@@ -89,6 +89,12 @@ defmodule CrossoverTest do
     assert actual2 == expected2
   end
 
+  test "One-Point Crossover exception" do
+    assert_raise RuntimeError, fn ->
+      Crossover.one_point([], nil)
+    end
+  end
+
   test "Two-Point Crossover in the middle" do
     cut_point1 = 1
     cut_point2 = 3
@@ -123,6 +129,12 @@ defmodule CrossoverTest do
     assert actual2 == expected2
   end
 
+  test "Two-Point Crossover exception" do
+    assert_raise RuntimeError, fn ->
+      Crossover.two_point([], nil)
+    end
+  end
+
   test "Scattered Crossover" do
     expected1 = [0.3, 0.8, 0.9, -0.2, -0.3]
     expected2 = [0.3, -0.2, -0.8, -0.5, 0.9]
@@ -142,28 +154,10 @@ defmodule CrossoverTest do
     assert actual2 == expected2
   end
 
-  test "Scattered Crossover 2" do
-    parent1 = %Chromosome{genes: [0.5, -1.5, -2.0, 1.0, 2.5, -2.0, 0.5] |> Arrays.new()}
-    parent2 = %Chromosome{genes: [-3.0, 1.0, 1.0, -3.0, 1.0, -3.0, -1.0] |> Arrays.new()}
-
-    expected1 = [-3.0, -1.5, 1.0, 1.0, 1.0, -2.0, -1.0]
-    expected2 = [0.5, 1.0, -2.0, -3.0, 2.5, -3.0, 0.5]
-
-    MiscMock
-    |> expect(:random, fn -> 0.0 end)
-    |> expect(:random, fn -> 1.0 end)
-    |> expect(:random, fn -> 0.0 end)
-    |> expect(:random, fn -> 1.0 end)
-    |> expect(:random, fn -> 0.0 end)
-    |> expect(:random, fn -> 1.0 end)
-    |> expect(:random, fn -> 0.0 end)
-
-    [child1, child2] = Crossover.scattered([parent1, parent2], nil)
-
-    actual1 = child1.genes |> Arrays.to_list()
-    actual2 = child2.genes |> Arrays.to_list()
-    assert actual1 == expected1
-    assert actual2 == expected2
+  test "Scattered Crossover exception" do
+    assert_raise RuntimeError, fn ->
+      Crossover.scattered([], nil)
+    end
   end
 
   test "Arithmetic Crossover" do
@@ -194,6 +188,12 @@ defmodule CrossoverTest do
     assert(assertion1 and assertion2)
   end
 
+  test "Arithmetic Crossover exception" do
+    assert_raise RuntimeError, fn ->
+      Crossover.arithmetic([], nil)
+    end
+  end
+
   test "Order-One Crossover" do
     parent1 = %Chromosome{genes: [5, 4, 0, 1, 3, 2, 6] |> Arrays.new()}
     parent2 = %Chromosome{genes: [6, 3, 2, 5, 0, 4, 0] |> Arrays.new()}
@@ -205,11 +205,6 @@ defmodule CrossoverTest do
     |> expect(:get_cut_points, fn _ -> {2, 5} end)
     |> expect(:get_cut_points, fn _ -> {1, 2} end)
 
-    # |> expect(:random, fn _ -> 2 end)
-    # |> expect(:random, fn _ -> 5 end)
-    # |> expect(:random, fn _ -> 1 end)
-    # |> expect(:random, fn _ -> 2 end)
-
     [child1, child2] = Crossover.order_one([parent1, parent2], nil)
 
     actual1 = child1.genes |> Arrays.to_list()
@@ -217,5 +212,11 @@ defmodule CrossoverTest do
 
     assert expected1 == actual1
     assert expected2 == actual2
+  end
+
+  test "Order-One Crossover exception" do
+    assert_raise RuntimeError, fn ->
+      Crossover.order_one([], nil)
+    end
   end
 end

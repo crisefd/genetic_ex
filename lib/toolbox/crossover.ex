@@ -148,7 +148,7 @@ defmodule Toolbox.Crossover do
 
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
-      if Arrays.size(parent1.genes) in 0..2 and Arrays.size(parent2.genes) in 0..2 do
+      if num_genes in 0..2 do
         [parent1, parent2 | childs]
       else
         {new_genes1, new_genes2} =
