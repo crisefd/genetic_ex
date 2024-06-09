@@ -1,6 +1,8 @@
 defmodule Utilities.Misc do
   @behaviour Behaviours.Misc
 
+  @type array() :: Arrays.t()
+
   @impl true
   def random(mean, variance), do: :rand.normal(mean, variance)
 
@@ -88,6 +90,21 @@ defmodule Utilities.Misc do
     else
       get_cut_points(num_genes)
     end
+  end
+
+  @spec load_array(binary()) :: array()
+
+  def load_array(filename) do
+    "priv/taguchi_orthogona_arrays/#{filename}"
+    |> File.read!()
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn line ->
+      line
+      |> String.split(",", trim: true)
+      |> Enum.map(&String.to_integer/1)
+      |> Arrays.new()
+    end)
+    |> Arrays.new()
   end
 
   def get_nil() do
