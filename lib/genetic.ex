@@ -330,13 +330,13 @@ defmodule Genetic do
     |> Enum.sort_by(& &1.fitness, sorter)
   end
 
-  defp get_mutate_function_params(parent, nil), do: [parent]
+  defp get_mutate_function_params(parent, nil), do: [parent, nil]
 
   defp get_mutate_function_params(parent, bounds) do
     [parent, bounds]
   end
 
-  defp get_crossover_function_params(parent1, parent2, nil), do: [[parent1, parent2]]
+  defp get_crossover_function_params(parent1, parent2, nil), do: [[parent1, parent2], nil]
 
   defp get_crossover_function_params(parent1, parent2, bounds), do: [[parent1, parent2], bounds]
 
