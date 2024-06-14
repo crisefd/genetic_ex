@@ -51,7 +51,7 @@ defmodule Toolbox.Mutation do
   @doc """
     Takes a chromosome, the genes' bounds and mutates one of the genes at random
   """
-  def one_gene(%Chromosome{genes: genes} = chromosome, {upper, lower} = _bounds) do
+  def one_gene(%Chromosome{genes: genes} = chromosome, {lower, upper} = _bounds) do
     size = Arrays.size(genes)
 
     if size == 0 do

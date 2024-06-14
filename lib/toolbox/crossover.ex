@@ -56,7 +56,7 @@ defmodule Toolbox.Crossover do
 
   def convex_one_point([], _), do: raise("The list of parents cannot be empty")
 
-  def convex_one_point(parents, {upper_bounds, lower_bounds}) do
+  def convex_one_point(parents, {lower_bounds, upper_bounds}) do
     num_genes = Arrays.size(hd(parents).genes)
     cut_point = misc().random(0..(num_genes - 1))
 

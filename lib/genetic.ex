@@ -33,7 +33,7 @@ defmodule Genetic do
   def execute(problem, opts \\ %Options{})
 
   def execute(problem, opts) do
-    initialize_population(&problem.genotype/1, opts)
+    initialize_population(&problem.genotype/0, opts)
     |> evolve(problem, 0, 0, 0.0, opts)
   end
 
@@ -41,9 +41,7 @@ defmodule Genetic do
 
   def initialize_population(genotype, opts) do
     population_size = opts.population_size
-    chromosome_size = opts.chromosome_size
-    bounds = check_bounds(opts.bounds_function.(), chromosome_size)
-    population = for _ <- 1..population_size, do: genotype.(bounds)
+    population = for _ <- 1..population_size, do: genotype.()
 
     add_to_genealogy(population)
 
@@ -89,15 +87,15 @@ defmodule Genetic do
     end
   end
 
-  @spec crossover(pairs :: list(pair()), opts :: options()) :: list(chromosome())
+  @spec crossover(pairs :: list(pair()), domain_function :: function(), opts :: options()) ::
+          list(chromosome())
 
-  def crossover([first_pair | _] = pairs, opts) do
-    bounds_function = opts.bounds_function
+  def crossover([first_pair | _] = pairs, domain_function, opts) do
     crossover_function = opts.crossover_function
     parallelize_crossover? = opts.parallelize_crossover?
     {chromosome, _} = first_pair
     num_genes = Arrays.size(chromosome.genes)
-    bounds = bounds_function.()
+    bounds = domain_function.()
     bounds = check_bounds(bounds, num_genes)
 
     if parallelize_crossover? do
@@ -107,16 +105,16 @@ defmodule Genetic do
     end
   end
 
-  @spec mutate(population :: list(chromosome()), opts :: options()) :: list(chromosome())
+  @spec mutate(population :: list(chromosome()), domain_function :: function(), opts :: options()) ::
+          list(chromosome())
 
-  def mutate(population, opts) do
-    bounds_function = opts.bounds_function
+  def mutate(population, domain_function, opts) do
     mutation_rate = opts.mutation_rate
     mutation_function = opts.mutation_function
     parallelize_mutate? = opts.parallelize_mutate?
 
     chromosome_size = (population |> hd()).genes |> Arrays.size()
-    bounds = bounds_function.()
+    bounds = domain_function.()
     bounds = check_bounds(bounds, chromosome_size)
 
     if parallelize_mutate? do
@@ -207,11 +205,11 @@ defmodule Genetic do
 
       children =
         parent_pairs
-        |> crossover(opts)
+        |> crossover(&problem.domain/0, opts)
 
       mutants =
         evaluated_population
-        |> mutate(opts)
+        |> mutate(&problem.domain/0, opts)
 
       reinsert(parents, children ++ mutants, leftover, opts)
       |> evolve(problem, generation + 1, best.fitness, new_temperature, opts)
@@ -343,7 +341,7 @@ defmodule Genetic do
   defp check_bounds(nil, _), do: nil
 
   defp check_bounds({%MapArray{}, %MapArray{}} = bounds, chromosome_size) do
-    {upper, lower} = bounds
+    {lower, upper} = bounds
     upper_size = Arrays.size(upper)
     lower_size = Arrays.size(lower)
 

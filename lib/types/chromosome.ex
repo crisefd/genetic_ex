@@ -1,15 +1,13 @@
 defmodule Types.Chromosome do
-  alias Arrays.Implementations.MapArray
-
   @type t :: %__MODULE__{
-          id: integer(),
-          genes: MapArray.t(),
+          id: binary(),
+          genes: Arrays.t(),
           fitness: number(),
           age: integer()
         }
 
   defstruct genes: Arrays.new([]),
-            fitness: 0,
+            fitness: 0.0,
             age: 0,
             id: Base.encode16(:crypto.strong_rand_bytes(64))
 

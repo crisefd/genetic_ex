@@ -28,7 +28,7 @@ defmodule MutationPropertyTest do
             lower_bounds <- list_of(integer(-10..0), length: size),
             upper_bounds <- list_of(integer(1..10), length: size)
           ) do
-      {u_bounds, l_bounds} = {Arrays.new(upper_bounds), Arrays.new(lower_bounds)}
+      {l_bounds, u_bounds} = {Arrays.new(lower_bounds), Arrays.new(upper_bounds)}
 
       genes =
         for index <- 0..(size - 1) do
@@ -38,7 +38,7 @@ defmodule MutationPropertyTest do
 
       chromosome = %Chromosome{genes: genes |> Arrays.new()}
 
-      mutant = Mutation.one_gene(chromosome, {u_bounds, l_bounds})
+      mutant = Mutation.one_gene(chromosome, {l_bounds, u_bounds})
 
       0..(size - 1)
       |> Enum.each(fn index ->
@@ -56,7 +56,7 @@ defmodule MutationPropertyTest do
             lower_bounds <- list_of(integer(-10..0), length: size),
             upper_bounds <- list_of(integer(1..10), length: size)
           ) do
-      {u_bounds, l_bounds} = {Arrays.new(upper_bounds), Arrays.new(lower_bounds)}
+      {l_bounds, u_bounds} = {Arrays.new(lower_bounds), Arrays.new(upper_bounds)}
 
       genes =
         for index <- 0..(size - 1) do
@@ -66,7 +66,7 @@ defmodule MutationPropertyTest do
 
       chromosome = %Chromosome{genes: genes |> Arrays.new()}
 
-      mutant = Mutation.all_genes(chromosome, {u_bounds, l_bounds})
+      mutant = Mutation.all_genes(chromosome, {l_bounds, u_bounds})
 
       0..(size - 1)
       |> Enum.each(fn index ->

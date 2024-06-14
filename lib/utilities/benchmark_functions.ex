@@ -1,4 +1,4 @@
-defmodule BenchmarkFunctions do
+defmodule Utilities.BenchmarkFunctions do
   @type benchmark :: {{number(), number()}, function(), function()}
 
   @spec get(atom()) :: benchmark() | nil

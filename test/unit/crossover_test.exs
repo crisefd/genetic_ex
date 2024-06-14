@@ -17,8 +17,8 @@ defmodule CrossoverTest do
     expected2 = [0.3, -0.2, 0.9000000000000001, -0.2, 0.9]
 
     bounds = {
-      for(_ <- 0..4, do: 1.0) |> Arrays.new(),
-      for(_ <- 0..4, do: -1.0) |> Arrays.new()
+      for(_ <- 0..4, do: -1.0) |> Arrays.new(),
+      for(_ <- 0..4, do: 1.0) |> Arrays.new()
     }
 
     MiscMock

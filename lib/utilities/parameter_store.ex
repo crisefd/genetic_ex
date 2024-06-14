@@ -6,6 +6,7 @@ defmodule Utilities.ParameterStore do
   alias Utilities.Misc
 
   @type optimization_type() :: :max | :min
+  @type array() :: Arrays.t()
 
   @type t :: %__MODULE__{
           population_size: integer(),
@@ -18,7 +19,6 @@ defmodule Utilities.ParameterStore do
           logging?: boolean(),
           cooling_rate: float(),
           survival_rate: float(),
-          bounds_function: function(),
           selection_function: function(),
           crossover_function: function(),
           mutation_function: function(),
@@ -46,7 +46,6 @@ defmodule Utilities.ParameterStore do
             logging_step: 10,
             cooling_rate: 0.8,
             survival_rate: 0.2,
-            bounds_function: &Misc.get_nil/0,
             selection_function: &Selection.elitist/3,
             crossover_function: &Crossover.one_point/2,
             mutation_function: &Mutation.scramble/2,

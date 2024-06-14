@@ -83,7 +83,7 @@ defmodule MutationTest do
 
     lower = for(_ <- 0..(num_genes - 1), do: 0) |> Arrays.new()
     upper = for(_ <- 0..(num_genes - 1), do: 50) |> Arrays.new()
-    %Chromosome{genes: mutated_genes} = Mutation.one_gene(@base, {upper, lower})
+    %Chromosome{genes: mutated_genes} = Mutation.one_gene(@base, {lower, upper})
 
     genes_set = MapSet.new(@base.genes)
     mutated_genes_set = MapSet.new(mutated_genes)
@@ -106,7 +106,7 @@ defmodule MutationTest do
     lower = for(_ <- 0..(num_genes - 1), do: 0) |> Arrays.new()
     upper = for(_ <- 0..(num_genes - 1), do: 50) |> Arrays.new()
 
-    %Chromosome{genes: mutated_genes} = Mutation.all_genes(@base, {upper, lower})
+    %Chromosome{genes: mutated_genes} = Mutation.all_genes(@base, {lower, upper})
 
     valid_genes =
       mutated_genes

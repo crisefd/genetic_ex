@@ -14,7 +14,7 @@ defmodule Behaviours.Problem do
   @doc """
     Randomly creates a new chromosome to initialize the population
   """
-  @callback genotype(bounds :: {array(), array()}) :: chromosome()
+  @callback genotype() :: chromosome()
 
   @doc """
     It tells you how good a solution (chromosome) is
@@ -29,4 +29,6 @@ defmodule Behaviours.Problem do
               generation :: integer(),
               temperature :: number()
             ) :: boolean()
+
+  @callback domain() :: {array(), array()}
 end
