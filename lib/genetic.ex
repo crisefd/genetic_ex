@@ -253,29 +253,36 @@ defmodule Genetic do
     Genealogy.add_chromosomes(parent1, parent2, child)
   end
 
+  defp add_multiple_to_genealogy(_, _, []), do: :ok
+
+  defp add_multiple_to_genealogy(parent1, parent2, [child | children]) do
+    add_to_genealogy(parent1, parent2, child)
+    add_multiple_to_genealogy(parent1, parent2, children)
+  end
+
   defp parallel_crossover(pairs, crossover_function, bounds) do
     pairs
-    |> Misc.pmap(fn {p1, p2} ->
-      params = get_crossover_function_params(p1, p2, bounds)
+    |> Misc.pmap(fn {parent1, parent2} ->
+      params = get_crossover_function_params(parent1, parent2, bounds)
 
       fn ->
-        [c1, c2] = apply(crossover_function, params)
-        add_to_genealogy(p1, p2, c1)
-        add_to_genealogy(p1, p2, c2)
-        {c1, c2}
+        new_children = apply(crossover_function, params)
+        add_multiple_to_genealogy(parent1, parent2, new_children)
+        new_children
       end
     end)
-    |> Enum.flat_map(fn {c1, c2} -> [c1, c2] end)
+    |> List.flatten()
   end
 
   defp sequential_crossover(pairs, crossover_function, bounds) do
     pairs
-    |> Enum.reduce([], fn {p1, p2}, children ->
-      params = get_crossover_function_params(p1, p2, bounds)
-      [c1, c2] = apply(crossover_function, params)
-      add_to_genealogy(p1, p2, c1)
-      add_to_genealogy(p1, p2, c2)
-      [c1, c2 | children]
+    |> Enum.reduce([], fn {parent1, parent2}, children ->
+      params = get_crossover_function_params(parent1, parent2, bounds)
+      new_children = apply(crossover_function, params)
+
+      add_multiple_to_genealogy(parent1, parent2, new_children)
+
+      new_children ++ children
     end)
   end
 

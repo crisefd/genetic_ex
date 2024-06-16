@@ -169,4 +169,24 @@ defmodule Toolbox.Mutation do
 
     %Chromosome{chromosome | genes: mutated_genes}
   end
+
+  @doc """
+    Performs convex mutation. Note: it only works with non discrete problems
+  """
+  def convex(%Chromosome{genes: genes} = chromosome) do
+    num_genes = Arrays.size(genes)
+    i = misc().random(0..(num_genes - 1))
+    k = misc().random(0..(num_genes - 1))
+    beta = misc().random(0..10) / 10
+
+    gene_i = (1 - beta) * genes[i] + beta * genes[k]
+    gene_k = beta * genes[i] + (1 - beta) * genes[k]
+
+    mutated_genes =
+      genes
+      |> Arrays.replace(i, gene_i)
+      |> Arrays.replace(k, gene_k)
+
+    %Chromosome{chromosome | genes: mutated_genes}
+  end
 end
