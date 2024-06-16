@@ -3,7 +3,7 @@ optimization_type = :min
 taguchi_array = Problems.Htga.select_taguchi_array()
 
 crossover_function = fn parents, _ ->
-  Problems.Htga.taguchi_crossover(parents, taguchi_array, optimization_type)
+  Toolbox.Crossover.taguchi_crossover(parents, taguchi_array, optimization_type)
 end
 
 results =

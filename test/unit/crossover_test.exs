@@ -219,4 +219,18 @@ defmodule CrossoverTest do
       Crossover.order_one([], nil)
     end
   end
+
+  test "Taguchi Crossover with binary genes" do
+    parent1 = %Chromosome{genes: Arrays.new([1, 1, 1, 1, 0, 0, 0])}
+    parent2 = %Chromosome{genes: Arrays.new([0, 0, 0, 0, 1, 1, 1])}
+    max_num_factors = 8
+    taguchi_array = Misc.load_array("L#{max_num_factors}")
+
+    [child] = Crossover.taguchi_crossover([parent1, parent2], taguchi_array, :min)
+
+    %Chromosome{genes: actual_genes} = child
+    expected_genes = Arrays.new([0, 0, 0, 0, 0, 0, 0])
+
+    assert expected_genes == actual_genes
+  end
 end

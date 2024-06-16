@@ -95,7 +95,7 @@ defmodule Utilities.Misc do
   @spec load_array(binary()) :: array()
 
   def load_array(filename) do
-    "priv/taguchi_orthogona_arrays/#{filename}"
+    "priv/taguchi_orthogonal_arrays/#{filename}.csv"
     |> File.read!()
     |> String.split("\n", trim: true)
     |> Enum.map(fn line ->
