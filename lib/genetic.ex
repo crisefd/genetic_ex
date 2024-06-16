@@ -8,7 +8,6 @@ defmodule Genetic do
     - Terminate criteria
   The user defines the particularities in their Problem modules and then call Genetic.execute with them
   """
-  alias Arrays.Implementations.MapArray
   alias Types.Chromosome
   alias Utilities.Stats
   alias Utilities.Misc
@@ -18,6 +17,7 @@ defmodule Genetic do
   @type chromosome() :: Chromosome.t()
   @type pair() :: {chromosome(), chromosome()}
   @type options() :: Options.t()
+  @type arrays() :: Arrays.t()
 
   @spec execute(problem :: module(), opts :: options()) :: keyword()
 
@@ -87,40 +87,32 @@ defmodule Genetic do
     end
   end
 
-  @spec crossover(pairs :: list(pair()), domain_function :: function(), opts :: options()) ::
+  @spec crossover(pairs :: list(pair()), opts :: options()) ::
           list(chromosome())
 
-  def crossover([first_pair | _] = pairs, domain_function, opts) do
+  def crossover(pairs, opts) do
     crossover_function = opts.crossover_function
     parallelize_crossover? = opts.parallelize_crossover?
-    {chromosome, _} = first_pair
-    num_genes = Arrays.size(chromosome.genes)
-    bounds = domain_function.()
-    bounds = check_bounds(bounds, num_genes)
 
     if parallelize_crossover? do
-      parallel_crossover(pairs, crossover_function, bounds)
+      parallel_crossover(pairs, crossover_function)
     else
-      sequential_crossover(pairs, crossover_function, bounds)
+      sequential_crossover(pairs, crossover_function)
     end
   end
 
-  @spec mutate(population :: list(chromosome()), domain_function :: function(), opts :: options()) ::
+  @spec mutate(population :: list(chromosome()), opts :: options()) ::
           list(chromosome())
 
-  def mutate(population, domain_function, opts) do
+  def mutate(population, opts) do
     mutation_rate = opts.mutation_rate
     mutation_function = opts.mutation_function
     parallelize_mutate? = opts.parallelize_mutate?
 
-    chromosome_size = (population |> hd()).genes |> Arrays.size()
-    bounds = domain_function.()
-    bounds = check_bounds(bounds, chromosome_size)
-
     if parallelize_mutate? do
-      parallel_mutate(population, mutation_rate, mutation_function, bounds)
+      parallel_mutate(population, mutation_rate, mutation_function)
     else
-      sequential_mutate(population, mutation_rate, mutation_function, bounds)
+      sequential_mutate(population, mutation_rate, mutation_function)
     end
   end
 
@@ -205,11 +197,11 @@ defmodule Genetic do
 
       children =
         parent_pairs
-        |> crossover(&problem.domain/0, opts)
+        |> crossover(opts)
 
       mutants =
         evaluated_population
-        |> mutate(&problem.domain/0, opts)
+        |> mutate(opts)
 
       reinsert(parents, children ++ mutants, leftover, opts)
       |> evolve(problem, generation + 1, best.fitness, new_temperature, opts)
@@ -260,10 +252,10 @@ defmodule Genetic do
     add_multiple_to_genealogy(parent1, parent2, children)
   end
 
-  defp parallel_crossover(pairs, crossover_function, bounds) do
+  defp parallel_crossover(pairs, crossover_function) do
     pairs
     |> Misc.pmap(fn {parent1, parent2} ->
-      params = get_crossover_function_params(parent1, parent2, bounds)
+      params = [parent1, parent2]
 
       fn ->
         new_children = apply(crossover_function, params)
@@ -274,24 +266,22 @@ defmodule Genetic do
     |> List.flatten()
   end
 
-  defp sequential_crossover(pairs, crossover_function, bounds) do
+  defp sequential_crossover(pairs, crossover_function) do
     pairs
     |> Enum.reduce([], fn {parent1, parent2}, children ->
-      params = get_crossover_function_params(parent1, parent2, bounds)
+      params = [[parent1, parent2]]
       new_children = apply(crossover_function, params)
-
       add_multiple_to_genealogy(parent1, parent2, new_children)
-
       new_children ++ children
     end)
   end
 
-  defp parallel_mutate(population, mutation_rate, mutation_function, bounds) do
+  defp parallel_mutate(population, mutation_rate, mutation_function) do
     population
     |> Enum.filter(fn _ -> Misc.random() <= mutation_rate end)
     |> Misc.pmap(fn chromosome ->
       fn ->
-        params = get_mutate_function_params(chromosome, bounds)
+        params = [chromosome]
         mutant = apply(mutation_function, params)
         add_to_genealogy(chromosome, mutant)
         mutant
@@ -299,11 +289,11 @@ defmodule Genetic do
     end)
   end
 
-  defp sequential_mutate(population, mutation_rate, mutation_function, bounds) do
+  defp sequential_mutate(population, mutation_rate, mutation_function) do
     population
     |> Enum.reduce([], fn chromosome, mutants ->
       if Misc.random() <= mutation_rate do
-        params = get_mutate_function_params(chromosome, bounds)
+        params = [chromosome]
         mutant = apply(mutation_function, params)
         add_to_genealogy(chromosome, mutant)
         [mutant | mutants]
@@ -334,38 +324,6 @@ defmodule Genetic do
     end)
     |> Enum.sort_by(& &1.fitness, sorter)
   end
-
-  defp get_mutate_function_params(parent, nil), do: [parent, nil]
-
-  defp get_mutate_function_params(parent, bounds) do
-    [parent, bounds]
-  end
-
-  defp get_crossover_function_params(parent1, parent2, nil), do: [[parent1, parent2], nil]
-
-  defp get_crossover_function_params(parent1, parent2, bounds), do: [[parent1, parent2], bounds]
-
-  defp check_bounds(nil, _), do: nil
-
-  defp check_bounds({%MapArray{}, %MapArray{}} = bounds, chromosome_size) do
-    {lower, upper} = bounds
-    upper_size = Arrays.size(upper)
-    lower_size = Arrays.size(lower)
-
-    if upper_size == chromosome_size and lower_size == chromosome_size do
-      bounds
-    else
-      raise(
-        "The upper and lower bounds size need to match chromosome size. Expected #{chromosome_size} but got #{upper_size} and #{lower_size}"
-      )
-    end
-  end
-
-  defp check_bounds(_, _),
-    do:
-      raise(
-        "The bounds item that was passed did not pattern match {Arrays.Implementations.MapArray<[]>, Arrays.Implementations.MapArray<[]>}"
-      )
 
   defp log(best, generation, temperature, opts) do
     logging = opts.logging?

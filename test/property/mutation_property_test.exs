@@ -86,7 +86,7 @@ defmodule MutationPropertyTest do
           ) do
       chromosome = %Chromosome{genes: genes |> Arrays.new()}
 
-      mutant = Mutation.flip(chromosome, nil, rate)
+      mutant = Mutation.flip(chromosome, rate)
 
       0..(size - 1)
       |> Enum.each(fn index ->
@@ -105,7 +105,7 @@ defmodule MutationPropertyTest do
           ) do
       chromosome = %Chromosome{genes: genes |> Arrays.new()}
 
-      mutant = Mutation.gaussian(chromosome, nil)
+      mutant = Mutation.gaussian(chromosome)
 
       assert Arrays.size(mutant.genes) == size
     end
@@ -118,7 +118,7 @@ defmodule MutationPropertyTest do
           ) do
       chromosome = %Chromosome{genes: genes |> Arrays.new()}
 
-      mutant = Mutation.swap(chromosome, nil)
+      mutant = Mutation.swap(chromosome)
 
       assert Arrays.size(mutant.genes) == size
     end
@@ -131,7 +131,7 @@ defmodule MutationPropertyTest do
           ) do
       chromosome = %Chromosome{genes: genes |> Arrays.new()}
 
-      mutant = Mutation.invert(chromosome, nil)
+      mutant = Mutation.invert(chromosome)
 
       assert Arrays.size(mutant.genes) == size
     end

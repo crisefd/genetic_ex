@@ -15,15 +15,15 @@ defmodule Toolbox.Mutation do
   """
   def misc, do: Application.get_env(:genetic, :misc)
 
-  @spec scramble(chromosome :: chromosome(), bounds :: {array(), array()}, partial :: boolean()) ::
+  @spec scramble(chromosome :: chromosome(), partial :: boolean()) ::
           chromosome()
 
   @doc """
     Scrambles the list of genes of a chromosome
   """
-  def scramble(chromosome, bounds, partial \\ false)
+  def scramble(chromosome, partial \\ false)
 
-  def scramble(%Chromosome{genes: genes} = chromosome, _bounds, partial) do
+  def scramble(%Chromosome{genes: genes} = chromosome, partial) do
     new_genes =
       if partial do
         num_genes = Arrays.size(genes)
@@ -87,15 +87,15 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: new_genes}
   end
 
-  @spec flip(chromosome :: chromosome(), bounds :: {array(), array()}, rate :: float()) ::
+  @spec flip(chromosome :: chromosome(), rate :: float()) ::
           chromosome()
 
   @doc """
     Flips the binary genes chromosome. Raises exception of non binary genes are present
   """
-  def flip(chromosome, bounds, rate \\ 1.0)
+  def flip(chromosome, rate \\ 1.0)
 
-  def flip(chromosome, _bounds, rate) do
+  def flip(chromosome, rate) do
     flipped_genes =
       chromosome.genes
       |> Arrays.map(fn gene ->
@@ -107,12 +107,12 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: flipped_genes}
   end
 
-  @spec gaussian(chromosome(), {array(), array()}) :: chromosome()
+  @spec gaussian(chromosome()) :: chromosome()
 
   @doc """
     Performs gaussian mutation.
   """
-  def gaussian(%Chromosome{genes: genes} = chromosome, _bounds) do
+  def gaussian(%Chromosome{genes: genes} = chromosome) do
     total_size = Arrays.size(genes)
     mean = Enum.sum(genes) / total_size
 
@@ -129,12 +129,12 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: mutated_genes}
   end
 
-  @spec swap(chromosome(), {array(), array()}) :: chromosome()
+  @spec swap(chromosome()) :: chromosome()
 
   @doc """
     Performs swap mutation
   """
-  def swap(%Chromosome{genes: genes} = chromosome, _bounds) do
+  def swap(%Chromosome{genes: genes} = chromosome) do
     num_genes = Arrays.size(genes)
 
     if num_genes < 2 do
@@ -155,12 +155,12 @@ defmodule Toolbox.Mutation do
     %Chromosome{chromosome | genes: mutated_genes}
   end
 
-  @spec invert(chromosome(), {array(), array()}) :: chromosome()
+  @spec invert(chromosome()) :: chromosome()
 
   @doc """
     Performs invert mutation
   """
-  def invert(%Chromosome{genes: genes} = chromosome, _bounds) do
+  def invert(%Chromosome{genes: genes} = chromosome) do
     mutated_genes =
       genes
       |> Arrays.reduce_right(Arrays.new(), fn result, gene ->

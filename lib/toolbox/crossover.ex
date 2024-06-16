@@ -18,21 +18,20 @@ defmodule Toolbox.Crossover do
 
   @spec one_point(
           parents :: list(chromosome()),
-          bounds :: {array(), array()},
           cut_point :: integer()
         ) ::
           list(chromosome())
 
-  def one_point(parents, bounds, cut_point \\ -1)
+  def one_point(parents, cut_point \\ -1)
 
-  def one_point([], _, _), do: raise("The list of parents cannot be empty")
+  def one_point([], _), do: raise("The list of parents cannot be empty")
 
-  def one_point([_parent | []] = parents, _, _), do: parents
+  def one_point([_parent | []] = parents, _), do: parents
 
   @doc """
     Takes two chromosomes, applies One-Point crossover and returns a tuple containing the two resulting offspring
   """
-  def one_point(parents, _bounds, cut_point) do
+  def one_point(parents, cut_point) do
     num_genes = Arrays.size(hd(parents).genes)
     cut_point = if cut_point < 0, do: misc().random(0..(num_genes - 1)), else: cut_point
 
@@ -90,17 +89,17 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  @spec two_point(parents :: list(chromosome()), bounds :: {array(), array()}) ::
+  @spec two_point(parents :: list(chromosome())) ::
           list(chromosome())
 
-  def two_point([], _), do: raise("The list of parents cannot be empty")
+  def two_point([]), do: raise("The list of parents cannot be empty")
 
-  def two_point([_parent | []] = parents, _), do: parents
+  def two_point([_parent | []] = parents), do: parents
 
   @doc """
     Takes two chromosomes, applies Two-Point crossover and returns a tuple containing the two resulting offspring
   """
-  def two_point(parents, _bounds) do
+  def two_point(parents) do
     num_genes = Arrays.size(hd(parents).genes)
 
     parents
@@ -132,19 +131,19 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  @spec scattered(parents :: list(chromosome()), bounds :: {array(), array()}, rate :: float()) ::
+  @spec scattered(parents :: list(chromosome()), rate :: float()) ::
           list(chromosome())
 
   @doc """
     Takes two chromosomes, applies Scattered (uniform) crossover and returns a list containing the resulting offspring
   """
-  def scattered(parents, bounds, rate \\ 0.5)
+  def scattered(parents, rate \\ 0.5)
 
-  def scattered([], _, _), do: raise("The list of parents cannot be empty")
+  def scattered([], _), do: raise("The list of parents cannot be empty")
 
-  def scattered([_parent | []] = parents, _, _), do: parents
+  def scattered([_parent | []] = parents, _), do: parents
 
-  def scattered(parents, _bounds, rate) do
+  def scattered(parents, rate) do
     num_genes = Arrays.size(hd(parents).genes)
 
     parents
@@ -176,20 +175,19 @@ defmodule Toolbox.Crossover do
 
   @spec arithmetic(
           parents :: list(chromosome()),
-          bounds :: {array(), array()},
           percentage :: float()
         ) ::
           list(chromosome())
   @doc """
      Takes two chromosomes, applies Arithemtic crossover and returns a tuple containing the two resulting offspring
   """
-  def arithmetic(parents, bounds, percentage \\ 0.0)
+  def arithmetic(parents, percentage \\ 0.0)
 
-  def arithmetic([], _, _), do: raise("The list of parents cannot be empty")
+  def arithmetic([], _), do: raise("The list of parents cannot be empty")
 
-  def arithmetic([_parent | []] = parents, _, _), do: parents
+  def arithmetic([_parent | []] = parents, _), do: parents
 
-  def arithmetic(parents, _bounds, percentage) do
+  def arithmetic(parents, percentage) do
     r_percentage = if percentage == 0.0, do: misc().random(), else: percentage
     s_percentage = 1.0 - r_percentage
     num_genes = Arrays.size(hd(parents).genes)
@@ -221,17 +219,17 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  @spec order_one(parents :: list(chromosome()), bounds :: {array(), array()}) ::
+  @spec order_one(parents :: list(chromosome())) ::
           list(chromosome())
 
-  def order_one([], _), do: raise("The list of parents cannot be empty")
+  def order_one([]), do: raise("The list of parents cannot be empty")
 
-  def order_one([_parent | []] = parents, _), do: parents
+  def order_one([_parent | []] = parents), do: parents
 
   @doc """
     Performs Order One Crossover
   """
-  def order_one(parents, _bounds) do
+  def order_one(parents) do
     parents
     |> preprocess_parents(fn {parent1, parent2}, childs ->
       genes1 = parent1.genes

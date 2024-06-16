@@ -13,7 +13,7 @@ defmodule CrossoverPropertyTest do
           ) do
       parent1 = %Chromosome{genes: genes1 |> Arrays.new()}
       parent2 = %Chromosome{genes: genes2 |> Arrays.new()}
-      [child1, child2] = Crossover.one_point([parent1, parent2], nil)
+      [child1, child2] = Crossover.one_point([parent1, parent2])
 
       assert Arrays.size(child1.genes) == size and
                Arrays.size(child2.genes) == size
@@ -28,7 +28,7 @@ defmodule CrossoverPropertyTest do
           ) do
       parent1 = %Chromosome{genes: genes1 |> Arrays.new()}
       parent2 = %Chromosome{genes: genes2 |> Arrays.new()}
-      [child1, child2] = Crossover.two_point([parent1, parent2], nil)
+      [child1, child2] = Crossover.two_point([parent1, parent2])
 
       assert Arrays.size(child1.genes) == size and
                Arrays.size(child2.genes) == size
@@ -43,7 +43,7 @@ defmodule CrossoverPropertyTest do
           ) do
       parent1 = %Chromosome{genes: genes1 |> Arrays.new()}
       parent2 = %Chromosome{genes: genes2 |> Arrays.new()}
-      [child1, child2] = Crossover.scattered([parent1, parent2], nil, 1.0)
+      [child1, child2] = Crossover.scattered([parent1, parent2], 1.0)
 
       assert Arrays.size(child1.genes) == size and
                Arrays.size(child2.genes) == size
@@ -58,7 +58,7 @@ defmodule CrossoverPropertyTest do
           ) do
       parent1 = %Chromosome{genes: genes1 |> Arrays.new()}
       parent2 = %Chromosome{genes: genes2 |> Arrays.new()}
-      [child1, child2] = Crossover.arithmetic([parent1, parent2], nil, 1.0)
+      [child1, child2] = Crossover.arithmetic([parent1, parent2], 1.0)
 
       assert Arrays.size(child1.genes) == size and
                Arrays.size(child2.genes) == size
@@ -76,10 +76,10 @@ defmodule CrossoverPropertyTest do
 
       if size === 0 do
         assert_raise RuntimeError, fn ->
-          Crossover.order_one([parent1, parent2], nil)
+          Crossover.order_one([parent1, parent2])
         end
       else
-        [child1, child2] = Crossover.order_one([parent1, parent2], nil)
+        [child1, child2] = Crossover.order_one([parent1, parent2])
 
         assert Arrays.size(child1.genes) == size and
                  Arrays.size(child2.genes) == size

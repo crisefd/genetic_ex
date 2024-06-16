@@ -53,19 +53,14 @@ defmodule Htga do
 end
 
 optimization_type = :min
-
 taguchi_array = Htga.select_taguchi_array()
 
 bounds = Htga.domain()
 
-crossover_function = fn parents, _ ->
+crossover_function = fn parents ->
   childs = Toolbox.Crossover.convex_one_point(parents, bounds)
   optimal_childs = Toolbox.Crossover.taguchi_crossover(parents, taguchi_array, optimization_type)
   childs ++ optimal_childs
-end
-
-mutation_function = fn chromosome, _ ->
-  Toolbox.Mutation.convex(chromosome)
 end
 
 results =
@@ -76,7 +71,7 @@ results =
       parallelize_crossover?: false,
       parallelize_mutate?: false,
       crossover_function: crossover_function,
-      mutation_function: mutation_function,
+      mutation_function: &Toolbox.Mutation.convex/1,
       optimization_type: optimization_type,
       discrete: false,
       logging?: true

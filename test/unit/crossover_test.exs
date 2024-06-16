@@ -45,7 +45,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    [child1, child2] = Crossover.one_point([@parent1, @parent2], nil)
+    [child1, child2] = Crossover.one_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -63,7 +63,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    [child1, child2] = Crossover.one_point([@parent1, @parent2], nil)
+    [child1, child2] = Crossover.one_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -81,7 +81,7 @@ defmodule CrossoverTest do
     |> expect(:split, &Misc.split/2)
     |> expect(:split, &Misc.split/2)
 
-    [child1, child2] = Crossover.one_point([@parent1, @parent2], nil)
+    [child1, child2] = Crossover.one_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -91,7 +91,7 @@ defmodule CrossoverTest do
 
   test "One-Point Crossover exception" do
     assert_raise RuntimeError, fn ->
-      Crossover.one_point([], nil)
+      Crossover.one_point([])
     end
   end
 
@@ -104,7 +104,7 @@ defmodule CrossoverTest do
     MiscMock
     |> expect(:get_cut_points, fn _ -> {cut_point1, cut_point2} end)
 
-    [child1, child2] = Crossover.two_point([@parent1, @parent2], nil)
+    [child1, child2] = Crossover.two_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -121,7 +121,7 @@ defmodule CrossoverTest do
     MiscMock
     |> expect(:get_cut_points, fn _ -> {cut_point1, cut_point2} end)
 
-    [child1, child2] = Crossover.two_point([@parent1, @parent2], nil)
+    [child1, child2] = Crossover.two_point([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -131,7 +131,7 @@ defmodule CrossoverTest do
 
   test "Two-Point Crossover exception" do
     assert_raise RuntimeError, fn ->
-      Crossover.two_point([], nil)
+      Crossover.two_point([])
     end
   end
 
@@ -146,7 +146,7 @@ defmodule CrossoverTest do
     |> expect(:random, fn -> 1.0 end)
     |> expect(:random, fn -> 0.0 end)
 
-    [child1, child2] = Crossover.scattered([@parent1, @parent2], nil)
+    [child1, child2] = Crossover.scattered([@parent1, @parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -156,7 +156,7 @@ defmodule CrossoverTest do
 
   test "Scattered Crossover exception" do
     assert_raise RuntimeError, fn ->
-      Crossover.scattered([], nil)
+      Crossover.scattered([])
     end
   end
 
@@ -169,7 +169,7 @@ defmodule CrossoverTest do
     MiscMock
     |> expect(:random, fn -> percentage end)
 
-    [child1, child2] = Crossover.arithmetic([@parent1, @parent2], nil)
+    [child1, child2] = Crossover.arithmetic([@parent1, @parent2])
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
 
@@ -190,7 +190,7 @@ defmodule CrossoverTest do
 
   test "Arithmetic Crossover exception" do
     assert_raise RuntimeError, fn ->
-      Crossover.arithmetic([], nil)
+      Crossover.arithmetic([])
     end
   end
 
@@ -205,7 +205,7 @@ defmodule CrossoverTest do
     |> expect(:get_cut_points, fn _ -> {2, 5} end)
     |> expect(:get_cut_points, fn _ -> {1, 2} end)
 
-    [child1, child2] = Crossover.order_one([parent1, parent2], nil)
+    [child1, child2] = Crossover.order_one([parent1, parent2])
 
     actual1 = child1.genes |> Arrays.to_list()
     actual2 = child2.genes |> Arrays.to_list()
@@ -216,7 +216,7 @@ defmodule CrossoverTest do
 
   test "Order-One Crossover exception" do
     assert_raise RuntimeError, fn ->
-      Crossover.order_one([], nil)
+      Crossover.order_one([])
     end
   end
 
