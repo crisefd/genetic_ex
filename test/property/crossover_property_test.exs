@@ -1,6 +1,7 @@
 defmodule CrossoverPropertyTest do
   alias Types.Chromosome
   alias Toolbox.Crossover
+  alias Utilities.Misc
   use ExUnit.Case
   use ExUnitProperties
 
@@ -83,6 +84,24 @@ defmodule CrossoverPropertyTest do
         assert Arrays.size(child1.genes) == size and
                  Arrays.size(child2.genes) == size
       end
+    end
+  end
+
+  property "Taguchi Crossover maintains the size of the input chromosomes" do
+    check all(
+            size <- integer(1..10),
+            genes1 <- list_of(integer(), length: size),
+            genes2 <- list_of(integer(), length: size)
+          ) do
+      parent1 = %Chromosome{genes: genes1 |> Arrays.new()}
+      parent2 = %Chromosome{genes: genes2 |> Arrays.new()}
+
+      max_num_factors = 16
+      taguchi_array = Misc.load_array("L#{max_num_factors}")
+
+      [child] = Crossover.taguchi_crossover([parent1, parent2], taguchi_array, :min)
+
+      Arrays.size(child.genes) === size
     end
   end
 end

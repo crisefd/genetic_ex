@@ -259,10 +259,9 @@ defmodule Toolbox.Crossover do
       genes1 = parent1.genes
       genes2 = parent2.genes
       dimension = Arrays.size(genes1)
+
       matrix = fillout_experiment_matrix(genes1, genes2, taguchi_array)
-
       snrs = calculate_snr(matrix, dimension, optimization_type)
-
       experiment_results = run_experiments(taguchi_array, snrs)
 
       optimal_genes =
