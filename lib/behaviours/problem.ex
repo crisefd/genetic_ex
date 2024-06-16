@@ -30,5 +30,8 @@ defmodule Behaviours.Problem do
               temperature :: number()
             ) :: boolean()
 
+  @doc """
+    Returns the lower and upper bounds of each variable (gene) of the genotype
+  """
   @callback domain() :: {array(), array()}
 end

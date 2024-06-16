@@ -8,6 +8,7 @@ defmodule Toolbox.Crossover do
 
   @type chromosome() :: Chromosome.t()
   @type array() :: Arrays.t()
+  @type optimization_type() :: :min | :max
 
   @spec misc() :: module()
   @doc """
@@ -246,6 +247,8 @@ defmodule Toolbox.Crossover do
     end)
   end
 
+  @spec taguchi_crossover(list(chromosome()), array(), optimization_type()) :: list(chromosome())
+
   def taguchi_crossover([], _, _), do: raise("The list of parents cannot be empty")
 
   def taguchi_crossover([_parent | []] = parents, _, _), do: parents
@@ -255,8 +258,9 @@ defmodule Toolbox.Crossover do
     |> preprocess_parents(fn {parent1, parent2}, childs ->
       genes1 = parent1.genes
       genes2 = parent2.genes
-      dimension = Arrays.size(parent1.genes)
+      dimension = Arrays.size(genes1)
       matrix = fillout_experiment_matrix(genes1, genes2, taguchi_array)
+
       snrs = calculate_snr(matrix, dimension, optimization_type)
 
       experiment_results = run_experiments(taguchi_array, snrs)
@@ -266,7 +270,7 @@ defmodule Toolbox.Crossover do
         |> Enum.with_index()
         |> Enum.reduce(Arrays.new([]), fn {res, idx}, genes ->
           gene = if res == 0, do: genes1[idx], else: genes2[idx]
-          Arrays.append(genes, gene)
+          if is_nil(gene), do: genes, else: Arrays.append(genes, gene)
         end)
 
       child = %Chromosome{genes: optimal_genes}
@@ -275,14 +279,14 @@ defmodule Toolbox.Crossover do
     end)
   end
 
-  defp fillout_experiment_matrix(parent1, parent2, taguchi_array) do
+  defp fillout_experiment_matrix(genes1, genes2, taguchi_array) do
     taguchi_array
     |> Arrays.map(fn row ->
       num_cols = Arrays.size(row)
 
       0..(num_cols - 1)
       |> Enum.map(fn index ->
-        if row[index] == 0, do: parent1[index], else: parent2[index]
+        if row[index] == 0, do: genes1[index], else: genes2[index]
       end)
       |> Arrays.new()
     end)
@@ -293,7 +297,9 @@ defmodule Toolbox.Crossover do
     |> Arrays.map(fn row ->
       if optimization_type == :min do
         squares_sum =
-          Arrays.map(row, &(&1 ** 2))
+          Arrays.map(row, fn val ->
+            if is_nil(val), do: 0, else: val ** 2
+          end)
           |> Arrays.reduce(0, &Kernel.+/2)
 
         -10.0 * Math.log10(1.0 / dimension) + squares_sum
