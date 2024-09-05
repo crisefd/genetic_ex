@@ -92,6 +92,16 @@ defmodule Utilities.Misc do
     end
   end
 
+  def select_taguchi_array(dimension) do
+    max_num_factors =
+      [8, 16, 32, 64, 128, 256, 512, 1024]
+      |> Enum.find(nil, fn num_factors ->
+        dimension <= num_factors
+      end)
+
+    Utilities.Misc.load_array("L#{max_num_factors}")
+  end
+
   @spec load_array(binary()) :: array()
 
   def load_array(filename) do

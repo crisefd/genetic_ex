@@ -173,6 +173,7 @@ defmodule Genetic do
       |> record_stats(generation, opts)
       |> resize_population(population_size)
 
+    # TODO:  Dont sort during evaluate, just min/max to reduce complexity
     best = hd(evaluated_population)
 
     new_temperature =
@@ -247,7 +248,8 @@ defmodule Genetic do
 
   defp add_multiple_to_genealogy(_, _, []), do: :ok
 
-  defp add_multiple_to_genealogy(parent1, parent2, [child | children]) do
+  defp add_multiple_to_genealogy(parent1, parent2, [child | children] = ls) do
+    IO.inspect(Enum.count(ls), label: "add_multiple_to_genealogy")
     add_to_genealogy(parent1, parent2, child)
     add_multiple_to_genealogy(parent1, parent2, children)
   end
@@ -271,7 +273,7 @@ defmodule Genetic do
     |> Enum.reduce([], fn {parent1, parent2}, children ->
       params = [[parent1, parent2]]
       new_children = apply(crossover_function, params)
-      add_multiple_to_genealogy(parent1, parent2, new_children)
+      # add_multiple_to_genealogy(parent1, parent2, new_children)
       new_children ++ children
     end)
   end
@@ -332,7 +334,7 @@ defmodule Genetic do
     if logging && rem(generation, step) == 0 do
       IO.inspect(generation, label: "Generation")
       IO.inspect(temperature, label: "Temperature")
-      IO.inspect(best, label: "Best solution")
+      IO.inspect(best.fitness, label: "Best fitness")
       IO.puts("-------------------------")
     end
   end

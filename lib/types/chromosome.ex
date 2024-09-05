@@ -11,6 +11,7 @@ defmodule Types.Chromosome do
             age: 0,
             id: Base.encode16(:crypto.strong_rand_bytes(64))
 
+  # TODO: Fix this protocol
   # defimpl Inspect, for: Types.Chromosome do
   #   import Inspect.Algebra
 

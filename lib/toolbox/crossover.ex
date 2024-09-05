@@ -4,6 +4,7 @@ defmodule Toolbox.Crossover do
   """
 
   require Integer
+  require IEx
   alias Types.Chromosome
 
   @type chromosome() :: Chromosome.t()
@@ -29,7 +30,7 @@ defmodule Toolbox.Crossover do
   def one_point([_parent | []] = parents, _), do: parents
 
   @doc """
-    Takes two chromosomes, applies One-Point crossover and returns a tuple containing the two resulting offspring
+    Takes a list of chromosomes, applies One-Point crossover and returns a list containing the  resulting offspring
   """
   def one_point(parents, cut_point) do
     num_genes = Arrays.size(hd(parents).genes)
@@ -257,7 +258,6 @@ defmodule Toolbox.Crossover do
       genes1 = parent1.genes
       genes2 = parent2.genes
       dimension = Arrays.size(genes1)
-
       matrix = fillout_experiment_matrix(genes1, genes2, taguchi_array)
       snrs = calculate_snr(matrix, dimension, optimization_type)
       experiment_results = run_experiments(taguchi_array, snrs)
@@ -283,7 +283,11 @@ defmodule Toolbox.Crossover do
 
       0..(num_cols - 1)
       |> Enum.map(fn index ->
-        if row[index] == 0, do: genes1[index], else: genes2[index]
+        cond do
+          row[index] == 0 -> genes1[index]
+          row[index] == 1 -> genes2[index]
+          true -> nil
+        end
       end)
       |> Arrays.new()
     end)
@@ -302,7 +306,9 @@ defmodule Toolbox.Crossover do
         -10.0 * Math.log10(1.0 / dimension) + squares_sum
       else
         invert_squares_sum =
-          Arrays.map(row, &(1.0 / &1 ** 2))
+          Arrays.map(row, fn val ->
+            if is_nil(val), do: 0, else: 1.0 / (val + 1) ** 2
+          end)
           |> Arrays.reduce(0, &Kernel.+/2)
 
         -10.0 * Math.log10(1.0 / dimension) + invert_squares_sum

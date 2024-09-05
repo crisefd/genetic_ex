@@ -39,21 +39,11 @@ defmodule Htga do
     {lower_bounds |> Arrays.new(), upper_bounds |> Arrays.new()}
   end
 
-  def select_taguchi_array() do
-    max_num_factors =
-      [8, 16, 32, 64, 128, 256, 512, 1024]
-      |> Enum.find(nil, fn num_factors ->
-        dimension() <= num_factors
-      end)
-
-    Utilities.Misc.load_array("L#{max_num_factors}")
-  end
-
   def dimension(), do: 30
 end
 
 optimization_type = :min
-taguchi_array = Htga.select_taguchi_array()
+taguchi_array = Utilities.Misc.select_taguchi_array(Htga.dimension())
 
 bounds = Htga.domain()
 
@@ -63,6 +53,10 @@ crossover_function = fn parents ->
   childs ++ optimal_childs
 end
 
+# BUG: parallelization is throwring cryptic errors sometimes.
+# Possibly related to the MapArrays library
+# TODO: implement optimization problems
+# TODO: add support for discrete problems
 results =
   Genetic.execute(
     Htga,
